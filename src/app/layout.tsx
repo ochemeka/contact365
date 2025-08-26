@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Contact365",
-  description: "Starter template with Tailwind and ThemeContext",
+  description: "Contact365 is a modern business listing and networking platform. Discover businesses, explore categories, and connect with trusted services all in one place.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
