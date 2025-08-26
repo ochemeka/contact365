@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300;
+
+  @keyframes spin-slower {
+  0% { startOffset: 0%; }
+  100% { startOffset: 100%; }
+}
+
+.animate-spin-slower {
+  animation: spin-slower 20s linear infinite;
+}
+
+}
