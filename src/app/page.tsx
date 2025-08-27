@@ -20,6 +20,8 @@ import { motion, easeOut } from "framer-motion";
 
 import { ArrowUp } from "lucide-react";
 import SpinningText from "../components/SpinningText";
+import Footer from "../components/Footer";
+import Header from "../components/Header";
 
 // ---- Reusable helpers ----
 const fadeInUp = {
@@ -254,128 +256,7 @@ export default function HomePage() {
   return (
     <div className="w-full min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-x-hidden">
       {/* Sticky Nav */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 dark:border-gray-800 bg-white/90 dark:bg-gray-950/90 backdrop-blur">
-        <div className="w-full flex items-center justify-between py-4 px-4 md:px-6">
-          {/* Brand */}
-          <span className="text-lg md:text-xl font-bold">
-            {/* Contact365 */}
-
-          </span>
-          {/* Brand */}
-          <Link href="/" className="flex items-center gap-3">
-            <img
-              src="/images/contact365logo.png" // 👈 place your logo in public/logo.png
-              alt="Contact365 Logo"
-              className="h-9 w-auto"
-            />
-
-          </Link>
-
-
-
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8">
-            <a className="hover:text-purple-600 dark:hover:text-purple-400" href="#">
-              Home
-            </a>
-            <a className="hover:text-purple-600 dark:hover:text-purple-400" href="#">
-              Explore
-            </a>
-            <a className="hover:text-purple-600 dark:hover:text-purple-400" href="#">
-              Blog
-            </a>
-            <a className="hover:text-purple-600 dark:hover:text-purple-400" href="#">
-              Contact
-            </a>
-          </nav>
-
-          {/* Actions */}
-          <div className="hidden md:flex items-center gap-3">
-            {/* Theme toggle */}
-            <button
-              aria-label="Toggle theme"
-              onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-            >
-              {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
-            </button>
-
-            {/* Sign In / Sign Up */}
-            {/* Sign In / Sign Up */}
-            <Link href="/signin">
-              <button className="px-4 py-2 rounded-lg border border-purple-600 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition">
-                Sign In
-              </button>
-            </Link>
-            <Link href="/signup">
-              <button className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-medium transition">
-                Sign Up
-              </button>
-            </Link>
-
-
-            {/* Add Listing */}
-            <button className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-medium transition">
-              Add Listing
-            </button>
-          </div>
-
-          {/* Mobile toggles */}
-          <div className="md:hidden flex items-center gap-2">
-            <button
-              aria-label="Toggle theme"
-              onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-            >
-              {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
-            </button>
-            <button
-              aria-label="Open menu"
-              onClick={() => setMobileOpen((o) => !o)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-            >
-              {mobileOpen ? <X /> : <Menu />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        {mobileOpen && (
-          <div className="md:hidden w-full border-t border-gray-200 dark:border-gray-800 px-4 py-4 bg-white dark:bg-gray-950">
-            <div className="flex flex-col gap-4">
-              <a className="hover:text-purple-600 dark:hover:text-purple-400" href="#">
-                Home
-              </a>
-              <a className="hover:text-purple-600 dark:hover:text-purple-400" href="#">
-                Explore
-              </a>
-              <a className="hover:text-purple-600 dark:hover:text-purple-400" href="#">
-                Blog
-              </a>
-              <a className="hover:text-purple-600 dark:hover:text-purple-400" href="#">
-                Contact
-              </a>
-
-              {/* Sign In / Sign Up */}
-              <Link href="/signin">
-                <button className="px-4 py-2 rounded-lg border border-purple-600 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition">
-                  Sign In
-                </button>
-              </Link>
-              <Link href="/signup">
-                <button className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-medium transition">
-                  Sign Up
-                </button>
-              </Link>
-
-
-              <button className="mt-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-medium transition">
-                Add Listing
-              </button>
-            </div>
-          </div>
-        )}
-      </header>
+      <Header />
 
       {/* Hero (fluid slider) */}
       <section className="relative w-full h-[80vh] md:h-[85vh] overflow-hidden">
@@ -657,38 +538,7 @@ export default function HomePage() {
 
       {/* Footer */}
       {/* Footer */}
-      <footer className="w-full bg-gray-900 text-gray-300 py-12">
-        <div className="px-4 md:px-6 grid gap-8 md:grid-cols-3">
-          <div>
-            <h3 className="text-lg font-bold mb-3 text-white">
-              <Link href="/" className="flex items-center gap-3">
-                <img
-                  src="/images/contact365logo.png"
-                  alt="Contact365 Logo"
-                  className="h-9 w-auto"
-                />
-              </Link>
-            </h3>
-            <p>Contact365 — Your trusted local business directory.</p>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-3">Quick Links</h4>
-            <ul className="space-y-2">
-              <li><a href="#" className="hover:text-white">Home</a></li>
-              <li><a href="#" className="hover:text-white">Explore</a></li>
-              <li><a href="#" className="hover:text-white">Blog</a></li>
-              <li><a href="#" className="hover:text-white">Contact</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-3">Follow Us</h4>
-            <p>Social icons go here</p>
-          </div>
-        </div>
-        <div className="text-center mt-8 text-sm text-gray-500">
-          © {new Date().getFullYear()} Contact365. All rights reserved.
-        </div>
-      </footer>
+      <Footer />
 
       {/* ✅ Back to Top Button with pulse effect */}
       <motion.button
