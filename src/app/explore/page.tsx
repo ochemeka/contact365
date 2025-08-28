@@ -1,48 +1,79 @@
-// src/app/explore/page.tsx
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { MapPin, Star } from "lucide-react";
-import { motion } from "framer-motion";
-import Header from "../../components/Header";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { MapPin, Star, Search, Filter, Grid, List } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Footer from "../../components/Footer";
+import Header from "../../components/Header";
 
-// ✅ Safe Ad component (auto-refresh every 60s)
+// Enhanced Ad component with error handling
 const Ad = ({ localSrc, alt, style }: any) => {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => setRefreshKey((k) => k + 1), 60000);
+    const interval = setInterval(() => {
+      setRefreshKey(k => k + 1);
+      setImageError(false);
+    }, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  if (imageError) {
+    return (
+      <div 
+        className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center"
+        style={style}
+      >
+        <span className="text-gray-500 text-sm">Ad Space</span>
+      </div>
+    );
+  }
 
   return (
     <div key={refreshKey} className="w-full">
       <img
         src={localSrc}
         alt={alt}
-        className="w-full rounded-xl shadow hover:shadow-lg transition"
+        onError={() => setImageError(true)}
+        className="w-full rounded-xl shadow hover:shadow-lg transition-all duration-300"
         style={style}
+        loading="lazy"
       />
     </div>
   );
 };
 
+// Enhanced loading skeleton
+const ItemSkeleton = () => (
+  <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden animate-pulse">
+    <div className="h-40 bg-gray-200 dark:bg-gray-700"></div>
+    <div className="p-5 space-y-3">
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+    </div>
+  </div>
+);
+
 export default function ExplorePage() {
   const [items, setItems] = useState<any[]>([]);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [price, setPrice] = useState(500);
+  const [priceRange, setPriceRange] = useState([100, 2000]);
   const [activeCategory, setActiveCategory] = useState("View All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState<'rating' | 'price' | 'newest'>('rating');
 
-  // ✅ Ads
   const adImages = [
-    "https://images.unsplash.com/photo-1607082349566-187342350d9f?w=600&q=80&auto=format", // Tech Ad
-    "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=600&q=80&auto=format", // Real Estate Ad
-    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80&auto=format", // SaaS Ad
+    "https://images.unsplash.com/photo-1607082349566-187342350d9f?w=600&q=80&auto=format",
+    "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=600&q=80&auto=format",
+    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80&auto=format",
   ];
 
-  // ✅ Mock fetch with real service images per category
   const categoryImages: Record<string, string[]> = {
     Places: [
       "https://images.unsplash.com/photo-1504674900247-0877df9cc836",
@@ -68,77 +99,188 @@ export default function ExplorePage() {
 
   const categories = ["View All", "Places", "Events", "Jobs", "Real Estate", "Cars"];
 
-  const fetchItems = async (pageNum: number) => {
-    const cats = ["Places", "Events", "Jobs", "Real Estate", "Cars"];
-    const newItems = Array.from({ length: 6 }).map((_, i) => {
-      const category = cats[(pageNum * i) % cats.length];
-      const images = categoryImages[category];
-      return {
-        id: `${pageNum}-${i}`,
-        title: `${category} Service ${(pageNum - 1) * 6 + i + 1}`,
-        location: "Lagos, Nigeria",
-        rating: (Math.random() * 2 + 3).toFixed(1), // 3.0 - 5.0
-        price: Math.floor(Math.random() * 1000) + 100,
-        category,
-        image: images[i % images.length] + "?auto=format&fit=crop&w=600&q=80",
-      };
-    });
-    return newItems;
-  };
-
-  // ✅ Initial load
-  useEffect(() => {
-    fetchItems(1).then(setItems);
+  // Enhanced fetch with error handling
+  const fetchItems = useCallback(async (pageNum: number) => {
+    try {
+      setLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate API delay
+      
+      const cats = ["Places", "Events", "Jobs", "Real Estate", "Cars"];
+      const newItems = Array.from({ length: 6 }).map((_, i) => {
+        const category = cats[(pageNum * i) % cats.length];
+        const images = categoryImages[category];
+        return {
+          id: `${pageNum}-${i}`,
+          title: `${category} Service ${(pageNum - 1) * 6 + i + 1}`,
+          location: "Lagos, Nigeria",
+          rating: parseFloat((Math.random() * 2 + 3).toFixed(1)),
+          price: Math.floor(Math.random() * 1900) + 100,
+          category,
+          createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
+          image: images[i % images.length] + "?auto=format&fit=crop&w=600&q=80",
+        };
+      });
+      return newItems;
+    } catch (error) {
+      console.error('Failed to fetch items:', error);
+      return [];
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // ✅ Load more (manual button)
-  const loadMore = () => {
+  useEffect(() => {
+    fetchItems(1).then(setItems);
+  }, [fetchItems]);
+
+  const loadMore = useCallback(() => {
+    if (loading) return;
+    
     fetchItems(page + 1).then((newItems) => {
-      if (newItems.length === 0) setHasMore(false);
-      setItems((prev) => [...prev, ...newItems]);
-      setPage((p) => p + 1);
+      if (newItems.length === 0) {
+        setHasMore(false);
+        return;
+      }
+      setItems(prev => [...prev, ...newItems]);
+      setPage(p => p + 1);
     });
-  };
+  }, [page, loading, fetchItems]);
 
-  // ✅ Filtered items
-  const filteredItems = items.filter(
-    (item) =>
-      item.price <= price &&
-      (activeCategory === "View All" || item.category === activeCategory)
-  );
+  // Enhanced filtering and sorting
+  const filteredAndSortedItems = useMemo(() => {
+    let filtered = items.filter(item => {
+      const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          item.location.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = activeCategory === "View All" || item.category === activeCategory;
+      const matchesPrice = item.price >= priceRange[0] && item.price <= priceRange[1];
+      
+      return matchesSearch && matchesCategory && matchesPrice;
+    });
 
-  // ✅ Category counts (memoized for performance)
+    // Sort items
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'rating':
+          return b.rating - a.rating;
+        case 'price':
+          return a.price - b.price;
+        case 'newest':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [items, searchQuery, activeCategory, priceRange, sortBy]);
+
+  // Category counts with memoization
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { "View All": items.length };
-    categories.forEach((cat) => {
+    categories.forEach(cat => {
       if (cat !== "View All") {
-        counts[cat] = items.filter((item) => item.category === cat).length;
+        counts[cat] = items.filter(item => item.category === cat).length;
       }
     });
     return counts;
   }, [items]);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-
-      <main className="flex-1 pt-24 px-4 md:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+      <main className="flex-1 pt-24 px-4 md:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* ✅ Left: Explore Content */}
-          <div className="lg:col-span-3 space-y-8">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              What are you looking for?
-            </h1>
-
-            {/* ✅ Category Chips with Counts */}
-            <div className="flex flex-wrap gap-3">
-              {categories.map((cat) => (
+          {/* Main Content */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Header */}
+            <Header />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Explore Services
+              </h1>
+              <div className="flex items-center gap-2">
                 <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                >
+                  <Grid size={20} />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                >
+                  <List size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Search and Filters */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm space-y-4">
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  placeholder="Search services, locations..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-transparent"
+                />
+              </div>
+
+              {/* Price Range Slider */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700 dark:text-gray-300">Price Range</span>
+                  <span className="font-semibold text-purple-600">
+                    ₦{priceRange[0]} - ₦{priceRange[1]}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="range"
+                    min="100"
+                    max="2000"
+                    value={priceRange[0]}
+                    onChange={e => setPriceRange([Number(e.target.value), priceRange[1]])}
+                    className="flex-1"
+                  />
+                  <input
+                    type="range"
+                    min="100"
+                    max="2000"
+                    value={priceRange[1]}
+                    onChange={e => setPriceRange([priceRange[0], Number(e.target.value)])}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+
+              {/* Sort Options */}
+              <div className="flex items-center gap-4">
+                <span className="text-gray-700 dark:text-gray-300">Sort by:</span>
+                <select
+                  value={sortBy}
+                  onChange={e => setSortBy(e.target.value as any)}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-transparent focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="rating">Highest Rated</option>
+                  <option value="price">Price: Low to High</option>
+                  <option value="newest">Newest First</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Category Chips */}
+            <div className="flex flex-wrap gap-3">
+              {categories.map(cat => (
+                <motion.button
                   key={cat}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setActiveCategory(cat)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-all ${
                     activeCategory === cat
-                      ? "bg-purple-600 text-white border-purple-600"
+                      ? "bg-purple-600 text-white border-purple-600 shadow-lg"
                       : "border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-gray-800"
                   }`}
                 >
@@ -150,85 +292,108 @@ export default function ExplorePage() {
                     />
                   )}
                   {cat} <span className="text-xs opacity-70">({categoryCounts[cat] || 0})</span>
-                </button>
+                </motion.button>
               ))}
             </div>
 
-            {/* ✅ Price Slider */}
-            <div className="flex items-center gap-4">
-              <span className="text-gray-700 dark:text-gray-300">Max Price:</span>
-              <input
-                type="range"
-                min="100"
-                max="2000"
-                value={price}
-                onChange={(e) => setPrice(Number(e.target.value))}
-                className="w-full"
-              />
-              <span className="font-semibold text-purple-600">₦{price}</span>
+            {/* Results Count */}
+            <div className="text-gray-600 dark:text-gray-400">
+              {filteredAndSortedItems.length} results found
             </div>
 
-            {/* ✅ Items List with Images */}
-            <div className="grid md:grid-cols-2 gap-6">
-              {filteredItems.map((item) => (
+            {/* Items Grid/List */}
+            <AnimatePresence mode="wait">
+              {loading && page === 1 ? (
+                <div className={`grid ${viewMode === 'grid' ? 'md:grid-cols-2' : 'grid-cols-1'} gap-6`}>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <ItemSkeleton key={i} />
+                  ))}
+                </div>
+              ) : (
                 <motion.div
-                  key={item.id}
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden cursor-pointer hover:shadow-lg transition"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className={`grid ${viewMode === 'grid' ? 'md:grid-cols-2' : 'grid-cols-1'} gap-6`}
                 >
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="h-40 w-full object-cover"
-                  />
-                  <div className="p-5">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1">
-                      {item.title}
-                    </h3>
-                    <p className="text-gray-500 flex items-center gap-1">
-                      <MapPin size={14} /> {item.location}
-                    </p>
-                    <p className="flex items-center gap-1 text-yellow-500">
-                      <Star size={14} /> {item.rating}
-                    </p>
-                    <p className="text-purple-600 font-bold">₦{item.price}</p>
-                  </div>
+                  {filteredAndSortedItems.map(item => (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300"
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="h-48 w-full object-cover"
+                        loading="lazy"
+                      />
+                      <div className="p-5">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2 mb-2">
+                          {item.title}
+                        </h3>
+                        <div className="space-y-2">
+                          <p className="text-gray-500 flex items-center gap-1">
+                            <MapPin size={14} /> {item.location}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <p className="flex items-center gap-1 text-yellow-500">
+                              <Star size={14} fill="currentColor" /> {item.rating}
+                            </p>
+                            <p className="text-purple-600 font-bold text-lg">₦{item.price}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
                 </motion.div>
-              ))}
-            </div>
+              )}
+            </AnimatePresence>
 
-            {/* ✅ Load More Button */}
-            {hasMore && (
-              <div className="text-center mt-6">
+            {/* Load More */}
+            {hasMore && !loading && (
+              <div className="text-center pt-6">
                 <button
                   onClick={loadMore}
-                  className="px-6 py-2 bg-purple-600 text-white rounded-full shadow hover:bg-purple-700 transition"
+                  className="px-8 py-3 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 transition-all duration-300 hover:shadow-xl"
                 >
-                  Load More
+                  Load More Services
                 </button>
               </div>
             )}
 
-            {!hasMore && (
-              <p className="text-center text-gray-500 py-4">No more results</p>
+            {loading && page > 1 && (
+              <div className="text-center py-6">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              </div>
+            )}
+
+            {!hasMore && items.length > 0 && (
+              <p className="text-center text-gray-500 py-6">
+                You've reached the end! 🎉
+              </p>
             )}
           </div>
 
-          {/* ✅ Right: Sticky Ads */}
+          {/* Sidebar Ads */}
           <aside className="hidden lg:block lg:col-span-1 space-y-6 sticky top-24 h-fit">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Sponsored
+            </h3>
             {adImages.map((src, idx) => (
               <Ad
                 key={idx}
                 localSrc={src}
-                alt={`Ad Banner ${idx + 1}`}
-                style={{ height: idx === 1 ? 600 : 250 }}
+                alt={`Sponsored Content ${idx + 1}`}
+                style={{ height: idx === 1 ? 400 : 250 }}
               />
             ))}
           </aside>
         </div>
       </main>
-
-      <Footer />
+        <Footer />
     </div>
   );
 }
