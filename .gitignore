@@ -34,3 +34,7 @@ Thumbs.db
 
 # Optional caches
 .cache
+.next/
+node_modules/
+out/
+.DS_Store
