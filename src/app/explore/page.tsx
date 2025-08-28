@@ -1,19 +1,20 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { MapPin, Star, Search, Filter, Grid, List } from "lucide-react";
+import { MapPin, Star, Search, Grid, List } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header";
+import Link from "next/link";
 
-// Enhanced Ad component with error handling
+// ✅ Reusable Ad Component
 const Ad = ({ localSrc, alt, style }: any) => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setRefreshKey(k => k + 1);
+      setRefreshKey((k) => k + 1);
       setImageError(false);
     }, 60000);
     return () => clearInterval(interval);
@@ -21,7 +22,7 @@ const Ad = ({ localSrc, alt, style }: any) => {
 
   if (imageError) {
     return (
-      <div 
+      <div
         className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center"
         style={style}
       >
@@ -44,7 +45,7 @@ const Ad = ({ localSrc, alt, style }: any) => {
   );
 };
 
-// Enhanced loading skeleton
+// ✅ Loading Skeleton
 const ItemSkeleton = () => (
   <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden animate-pulse">
     <div className="h-40 bg-gray-200 dark:bg-gray-700"></div>
@@ -62,11 +63,9 @@ export default function ExplorePage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [priceRange, setPriceRange] = useState([100, 2000]);
-  const [activeCategory, setActiveCategory] = useState("View All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState<'rating' | 'price' | 'newest'>('rating');
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [activeCategory, setActiveCategory] = useState<string>("All");
 
   const adImages = [
     "https://images.unsplash.com/photo-1607082349566-187342350d9f?w=600&q=80&auto=format",
@@ -74,6 +73,7 @@ export default function ExplorePage() {
     "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80&auto=format",
   ];
 
+  const categories = ["Places", "Events", "Jobs", "Real Estate", "Cars"];
   const categoryImages: Record<string, string[]> = {
     Places: [
       "https://images.unsplash.com/photo-1504674900247-0877df9cc836",
@@ -97,215 +97,153 @@ export default function ExplorePage() {
     ],
   };
 
-  const categories = ["View All", "Places", "Events", "Jobs", "Real Estate", "Cars"];
-
-  // Enhanced fetch with error handling
+  // ✅ Simulated API fetch
   const fetchItems = useCallback(async (pageNum: number) => {
-    try {
-      setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate API delay
-      
-      const cats = ["Places", "Events", "Jobs", "Real Estate", "Cars"];
-      const newItems = Array.from({ length: 6 }).map((_, i) => {
-        const category = cats[(pageNum * i) % cats.length];
-        const images = categoryImages[category];
-        return {
-          id: `${pageNum}-${i}`,
-          title: `${category} Service ${(pageNum - 1) * 6 + i + 1}`,
-          location: "Lagos, Nigeria",
-          rating: parseFloat((Math.random() * 2 + 3).toFixed(1)),
-          price: Math.floor(Math.random() * 1900) + 100,
-          category,
-          createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
-          image: images[i % images.length] + "?auto=format&fit=crop&w=600&q=80",
-        };
-      });
-      return newItems;
-    } catch (error) {
-      console.error('Failed to fetch items:', error);
-      return [];
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    const newItems = Array.from({ length: 10 }).map((_, i) => {
+      const category = categories[(pageNum * i) % categories.length];
+      const images = categoryImages[category];
+      return {
+        id: `${pageNum}-${i}`,
+        title: `${category} Service ${(pageNum - 1) * 10 + i + 1}`,
+        location: "Lagos, Nigeria",
+        rating: parseFloat((Math.random() * 2 + 3).toFixed(1)),
+        price: Math.floor(Math.random() * 2000) + 100,
+        category,
+        image: images[i % images.length] + "?auto=format&fit=crop&w=600&q=80",
+        slug: `${category.toLowerCase()}-service-${i}`,
+      };
+    });
+
+    setLoading(false);
+    return newItems;
   }, []);
 
   useEffect(() => {
     fetchItems(1).then(setItems);
   }, [fetchItems]);
 
-  const loadMore = useCallback(() => {
+  const loadMore = () => {
     if (loading) return;
-    
     fetchItems(page + 1).then((newItems) => {
       if (newItems.length === 0) {
         setHasMore(false);
-        return;
-      }
-      setItems(prev => [...prev, ...newItems]);
-      setPage(p => p + 1);
-    });
-  }, [page, loading, fetchItems]);
-
-  // Enhanced filtering and sorting
-  const filteredAndSortedItems = useMemo(() => {
-    let filtered = items.filter(item => {
-      const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.location.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = activeCategory === "View All" || item.category === activeCategory;
-      const matchesPrice = item.price >= priceRange[0] && item.price <= priceRange[1];
-      
-      return matchesSearch && matchesCategory && matchesPrice;
-    });
-
-    // Sort items
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'rating':
-          return b.rating - a.rating;
-        case 'price':
-          return a.price - b.price;
-        case 'newest':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        default:
-          return 0;
+      } else {
+        setItems((prev) => [...prev, ...newItems]);
+        setPage((p) => p + 1);
       }
     });
+  };
 
-    return filtered;
-  }, [items, searchQuery, activeCategory, priceRange, sortBy]);
+  // ✅ Filtering logic
+  const filteredItems = useMemo(() => {
+    let filtered = items;
 
-  // Category counts with memoization
+    if (activeCategory !== "All") {
+      filtered = filtered.filter((item) => item.category === activeCategory);
+    }
+
+    return filtered.filter(
+      (item) =>
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.location.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [items, searchQuery, activeCategory]);
+
+  // ✅ Count items per category
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { "View All": items.length };
-    categories.forEach(cat => {
-      if (cat !== "View All") {
-        counts[cat] = items.filter(item => item.category === cat).length;
-      }
+    const counts: Record<string, number> = { All: items.length };
+    categories.forEach((cat) => {
+      counts[cat] = items.filter((item) => item.category === cat).length;
     });
     return counts;
   }, [items]);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
-      <main className="flex-1 pt-24 px-4 md:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <Header />
+
+      {/* Page Container */}
+      <main className="flex-1 max-w-7xl mx-auto px-6 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Header */}
-            <Header />
+          <div className="lg:col-span-3 space-y-8">
+            {/* Top Controls */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Explore Services
+                Explore Listings
               </h1>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded-lg ${
+                    viewMode === "grid"
+                      ? "bg-purple-600 text-white"
+                      : "text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
                 >
                   <Grid size={20} />
                 </button>
                 <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded-lg ${
+                    viewMode === "list"
+                      ? "bg-purple-600 text-white"
+                      : "text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
                 >
                   <List size={20} />
                 </button>
               </div>
             </div>
 
-            {/* Search and Filters */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm space-y-4">
-              {/* Search Bar */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search services, locations..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-transparent"
-                />
-              </div>
-
-              {/* Price Range Slider */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-700 dark:text-gray-300">Price Range</span>
-                  <span className="font-semibold text-purple-600">
-                    ₦{priceRange[0]} - ₦{priceRange[1]}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="range"
-                    min="100"
-                    max="2000"
-                    value={priceRange[0]}
-                    onChange={e => setPriceRange([Number(e.target.value), priceRange[1]])}
-                    className="flex-1"
-                  />
-                  <input
-                    type="range"
-                    min="100"
-                    max="2000"
-                    value={priceRange[1]}
-                    onChange={e => setPriceRange([priceRange[0], Number(e.target.value)])}
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-
-              {/* Sort Options */}
-              <div className="flex items-center gap-4">
-                <span className="text-gray-700 dark:text-gray-300">Sort by:</span>
-                <select
-                  value={sortBy}
-                  onChange={e => setSortBy(e.target.value as any)}
-                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-transparent focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="rating">Highest Rated</option>
-                  <option value="price">Price: Low to High</option>
-                  <option value="newest">Newest First</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Category Chips */}
-            <div className="flex flex-wrap gap-3">
-              {categories.map(cat => (
-                <motion.button
+            {/* Category Filter */}
+            <div className="flex flex-wrap gap-3 mb-6">
+              {["All", ...categories].map((cat) => (
+                <button
                   key={cat}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                   onClick={() => setActiveCategory(cat)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-all ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                     activeCategory === cat
-                      ? "bg-purple-600 text-white border-purple-600 shadow-lg"
-                      : "border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-gray-800"
+                      ? "bg-purple-600 text-white shadow-md"
+                      : "bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900"
                   }`}
                 >
-                  {cat !== "View All" && (
-                    <img
-                      src={categoryImages[cat][0] + "?w=40&h=40&fit=crop"}
-                      alt={cat}
-                      className="w-6 h-6 rounded-full object-cover"
-                    />
-                  )}
-                  {cat} <span className="text-xs opacity-70">({categoryCounts[cat] || 0})</span>
-                </motion.button>
+                  {cat} ({categoryCounts[cat] ?? 0})
+                </button>
               ))}
             </div>
 
-            {/* Results Count */}
-            <div className="text-gray-600 dark:text-gray-400">
-              {filteredAndSortedItems.length} results found
+            {/* Search Bar */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+              <div className="relative">
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
+                <input
+                  type="text"
+                  placeholder="Search listings..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-transparent"
+                />
+              </div>
             </div>
 
-            {/* Items Grid/List */}
+            {/* Results */}
             <AnimatePresence mode="wait">
               {loading && page === 1 ? (
-                <div className={`grid ${viewMode === 'grid' ? 'md:grid-cols-2' : 'grid-cols-1'} gap-6`}>
-                  {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  className={`grid ${
+                    viewMode === "grid"
+                      ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+                      : "grid-cols-1"
+                  } gap-6`}
+                >
+                  {Array.from({ length: 10 }).map((_, i) => (
                     <ItemSkeleton key={i} />
                   ))}
                 </div>
@@ -314,39 +252,42 @@ export default function ExplorePage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className={`grid ${viewMode === 'grid' ? 'md:grid-cols-2' : 'grid-cols-1'} gap-6`}
+                  className={`grid ${
+                    viewMode === "grid"
+                      ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+                      : "grid-cols-1"
+                  } gap-6`}
                 >
-                  {filteredAndSortedItems.map(item => (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      whileHover={{ scale: 1.02 }}
-                      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300"
-                    >
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="h-48 w-full object-cover"
-                        loading="lazy"
-                      />
-                      <div className="p-5">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2 mb-2">
-                          {item.title}
-                        </h3>
-                        <div className="space-y-2">
-                          <p className="text-gray-500 flex items-center gap-1">
+                  {filteredItems.map((item) => (
+                    <Link key={item.id} href={`/${item.slug}`}>
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300"
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="h-40 w-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="p-4">
+                          <h3 className="text-md font-semibold text-gray-900 dark:text-white line-clamp-2 mb-1">
+                            {item.title}
+                          </h3>
+                          <p className="text-sm text-gray-500 flex items-center gap-1">
                             <MapPin size={14} /> {item.location}
                           </p>
-                          <div className="flex items-center justify-between">
-                            <p className="flex items-center gap-1 text-yellow-500">
+                          <div className="flex items-center justify-between mt-2">
+                            <p className="flex items-center gap-1 text-yellow-500 text-sm">
                               <Star size={14} fill="currentColor" /> {item.rating}
                             </p>
-                            <p className="text-purple-600 font-bold text-lg">₦{item.price}</p>
+                            <p className="text-purple-600 font-bold text-sm">
+                              ₦{item.price}
+                            </p>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
+                      </motion.div>
+                    </Link>
                   ))}
                 </motion.div>
               )}
@@ -359,21 +300,9 @@ export default function ExplorePage() {
                   onClick={loadMore}
                   className="px-8 py-3 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 transition-all duration-300 hover:shadow-xl"
                 >
-                  Load More Services
+                  Load More
                 </button>
               </div>
-            )}
-
-            {loading && page > 1 && (
-              <div className="text-center py-6">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-              </div>
-            )}
-
-            {!hasMore && items.length > 0 && (
-              <p className="text-center text-gray-500 py-6">
-                You've reached the end! 🎉
-              </p>
             )}
           </div>
 
@@ -393,7 +322,8 @@ export default function ExplorePage() {
           </aside>
         </div>
       </main>
-        <Footer />
+
+      <Footer />
     </div>
   );
 }
