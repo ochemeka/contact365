@@ -1,24 +1,26 @@
-import { Star } from "lucide-react";
+// src/components/ReviewCard.tsx
+import React from "react";
 
-const StarRating = ({ rating }: { rating: number }) => (
-  <div className="flex items-center">
-    {[...Array(5)].map((_, i) => (
-      <Star
-        key={i}
-        className={`h-4 w-4 ${i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
-      />
-    ))}
-  </div>
-);
+type ReviewCardProps = {
+  name: string;
+  rating: number;
+  comment: string;
+  avatar: string;
+};
 
-export default function ReviewCard({ user, rating, text }: { user: string; rating: number; text: string }) {
+const ReviewCard: React.FC<ReviewCardProps> = ({ name, rating, comment, avatar }) => {
   return (
-    <div className="p-4 border rounded-lg">
-      <div className="flex justify-between">
-        <span className="font-medium">{user}</span>
-        <StarRating rating={rating} />
+    <div className="border rounded-lg p-4 shadow-sm flex flex-col items-start gap-2">
+      <div className="flex items-center gap-3">
+        <img src={avatar} alt={name} className="w-10 h-10 rounded-full object-cover" />
+        <div>
+          <p className="font-semibold">{name}</p>
+          <p className="text-sm text-yellow-500">{`⭐ ${rating}`}</p>
+        </div>
       </div>
-      <p className="text-gray-600 mt-2">{text}</p>
+      <p className="mt-2 text-gray-700">{comment}</p>
     </div>
   );
-}
+};
+
+export default ReviewCard;
