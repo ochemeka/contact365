@@ -1,6 +1,5 @@
 // src/components/ReviewCard.tsx
-// src/components/ReviewCard.tsx
-import { Star } from "lucide-react";
+import React from "react";
 
 const StarRating = ({ rating }: { rating: number }) => (
   <div className="flex items-center">
@@ -34,5 +33,6 @@ export default function ReviewCard({
       <p className="text-gray-600 mt-2">{comment}</p>
     </div>
   );
-}
+};
 
+export default ReviewCard;
