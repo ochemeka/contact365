@@ -93,7 +93,7 @@ export default function Header() {
           {/* Add Listing CTA */}
           <Link href="/add-listing">
             <button className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-medium transition">
-              Add Listing
+              Post your Ads+
             </button>
           </Link>
         </div>
