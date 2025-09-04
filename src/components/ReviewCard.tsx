@@ -1,5 +1,6 @@
 // src/components/ReviewCard.tsx
 import React from "react";
+import { Star } from "lucide-react"; // ⭐ Don't forget this import
 
 interface ReviewCardProps {
   name: string;
@@ -30,6 +31,4 @@ export default function ReviewCard({ name, rating, comment }: ReviewCardProps) {
       <p className="text-gray-600 dark:text-gray-300">{comment}</p>
     </div>
   );
-};
-
-export default ReviewCard;
+}
