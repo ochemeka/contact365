@@ -44,10 +44,35 @@ export default function BusinessProfilePage() {
     );
 
   // Mock Data
-  const reviews = [
-    { name: "John Doe", rating: 5, comment: "Excellent service!" },
-    { name: "Jane Smith", rating: 4, comment: "Good experience overall." },
-  ];
+// Example inside src/app/[slug]/page.tsx
+
+const reviews = [
+  {
+    name: "Jane Doe",
+    rating: 5,
+    comment: "Amazing service! Highly recommended.",
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+  },
+  {
+    name: "John Smith",
+    rating: 4,
+    comment: "Great experience overall, will use again.",
+    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+  },
+  {
+    name: "Amaka Obi",
+    rating: 5,
+    comment: "Excellent customer support and fast delivery.",
+    // no avatar → fallback initials
+  },
+  {
+    name: "Chinedu Okafor",
+    rating: 3,
+    comment: "Good product but shipping took longer than expected.",
+    // no avatar → fallback initials
+  },
+];
+
 
   const events = [
     { title: "Networking Night", date: "Sept 15, 2025" },
