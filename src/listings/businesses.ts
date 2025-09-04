@@ -15,8 +15,10 @@ export interface Business {
   phone?: string;
   whatsapp?: string;
   slug?: string;
-  mapEmbed?: string;  // 👈 Add this line
+  mapEmbed?: string;   // 👈 already added
+  currency?: string;   // 👈 add this new field
 }
+
 
 
 export const africanCountryData = [
