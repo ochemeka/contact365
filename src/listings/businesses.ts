@@ -15,7 +15,9 @@ export interface Business {
   phone?: string;
   whatsapp?: string;
   slug?: string;
+  mapEmbed?: string;  // 👈 Add this line
 }
+
 
 export const africanCountryData = [
   {
