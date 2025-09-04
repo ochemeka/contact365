@@ -1,3 +1,4 @@
+// src/hooks/useListings.ts
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,7 +13,8 @@ interface Options {
   search?: string;
   page?: number;
   pageSize?: number;
-  /** Base categories used to compute "Other" */
+  country?: string;   // NEW
+  state?: string;     // NEW
   baseCategories?: string[];
 }
 
@@ -24,6 +26,18 @@ export function useListings(options: Options = {}) {
     setLoading(true);
 
     let data = [...listingsData];
+
+    // filter by country
+    if (options.country) {
+      const country = options.country.toLowerCase();
+      data = data.filter((b) => b.country.toLowerCase() === country);
+    }
+
+    // filter by state (within country)
+    if (options.state) {
+      const state = options.state.toLowerCase();
+      data = data.filter((b) => b.location.toLowerCase() === state);
+    }
 
     // Precompute base set for "Other"
     const baseSet = new Set(
@@ -37,13 +51,11 @@ export function useListings(options: Options = {}) {
       if (selected === "other" || selected === "others") {
         data = data.filter((b) => {
           const c = (b.category ?? "").toString().trim().toLowerCase();
-          // Treat empty/missing category or anything not in baseCategories as "Other"
           return !c || !baseSet.has(c) || c === "other" || c === "others";
         });
       } else {
         data = data.filter(
-          (b) =>
-            (b.category ?? "").toString().trim().toLowerCase() === selected
+          (b) => (b.category ?? "").toString().trim().toLowerCase() === selected
         );
       }
     }
@@ -72,9 +84,15 @@ export function useListings(options: Options = {}) {
     // sort
     if (options.sort === "rating") {
       data.sort((a, b) => b.rating - a.rating);
-    } else {
-      data.sort((a, b) => b.id - a.id); // assume higher id = newer
+  } else {
+  data.sort((a, b) => {
+    if (typeof b.id === "string" && typeof a.id === "string") {
+      return b.id.localeCompare(a.id);
     }
+    return Number(b.id) - Number(a.id); // numeric-safe
+  });
+}
+
 
     // pagination
     if (options.page && options.pageSize) {
@@ -90,7 +108,6 @@ export function useListings(options: Options = {}) {
 
     setItems(data);
     setLoading(false);
-    // IMPORTANT: stringify arrays in deps to avoid re-running on every render
   }, [
     options.sort,
     options.limit,
@@ -100,6 +117,8 @@ export function useListings(options: Options = {}) {
     options.search,
     options.page,
     options.pageSize,
+    options.country,
+    options.state,
     JSON.stringify(options.baseCategories ?? []),
   ]);
 
