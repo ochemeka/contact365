@@ -26,11 +26,14 @@ import AdBanner from "../../components/AdBanner";
 import { africanCountryData } from "../../listings/businesses";
 
 const fadeInUp = {
-  initial: { opacity: 0, y: 30 },
-  whileInView: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, ease: "easeOut" },
-  viewport: { once: true },
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: {
+    duration: 0.6,
+    ease: "easeOut" as const, // ✅ cast it so TypeScript accepts
+  },
 };
+
 
 const features = [
   {
