@@ -1,683 +1,948 @@
+
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   MapPin,
-  Search,
   Star,
-  Briefcase,
-  Users,
-  Home as HomeIcon,
-  Calendar,
-  ArrowUp,
+  Search,
+  Grid,
+  List,
+  Flame,
+  Sparkles,
   ChevronLeft,
   ChevronRight,
+  BriefcaseBusiness,
+  Globe,
+  ChevronDown,
+  Filter,
 } from "lucide-react";
-import Link from "next/link";
-import { motion, easeOut } from "framer-motion";
-import SpinningText from "../components/SpinningText";
+import { motion, AnimatePresence } from "framer-motion";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
+import Link from "next/link";
+import { useListings } from "../hooks/useListings";
+import AdBanner from "../components/AdBanner";
+import { africanCountryData } from "../listings/businesses";
 
-// ---- Types ----
-interface Slide {
-  id: number;
-  title: string;
-  subtitle: string;
-  image: string;
-  alt: string;
-}
-
-interface Feature {
-  id: number;
-  icon: React.ReactNode;
-  title: string;
-  text: string;
-  image: string;
-  alt: string;
-}
-
-interface Place {
-  id: number;
-  name: string;
-  rating: number;
-  category: string;
-  image: string;
-  alt: string;
-}
-
-interface RealEstate {
-  id: number;
-  title: string;
-  price: string;
-  term: string;
-  size: string;
-  rooms: string;
-  baths: string;
-  beds: string;
-  image: string;
-  alt: string;
-}
-
-interface Job {
-  id: number;
-  title: string;
-  contact: string;
-  type: string;
-  image: string;
-  alt: string;
-}
-
-// ---- Constants ----
-const SLIDE_INTERVAL = 6000;
-const SCROLL_THRESHOLD = 400;
-
-// ---- Reusable helpers ----
 const fadeInUp = {
-  initial: { opacity: 0, y: 16 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.2 },
-  transition: { duration: 0.5, ease: easeOut },
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: {
+    duration: 0.6,
+    ease: "easeOut" as const, // ✅ cast it so TypeScript accepts
+  },
 };
 
-const SectionHeader = React.memo(({
-  icon,
-  title,
-  subtitle,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  subtitle?: string;
-}) => (
-  <motion.div
-    {...fadeInUp}
-    className="w-full flex flex-col items-center text-center gap-3"
-  >
-    <div className="flex items-center gap-3">
-      <span className="inline-flex items-center justify-center rounded-full p-2 bg-purple-100 dark:bg-purple-900/40">
-        {icon}
-      </span>
-      <h2 className="text-3xl font-bold">{title}</h2>
+
+const features = [
+  {
+    id: 1,
+    title: "Verified African Businesses",
+    text: "Every listing is reviewed and verified for trust and authenticity across Africa.",
+    image: "https://images.unsplash.com/photo-1556761175-4b46a572b786?w=800",
+    alt: "Verified Listings",
+    icon: <Star size={20} />,
+  },
+  {
+    id: 2,
+    title: "Find Local Services",
+    text: "Discover businesses, services, and opportunities in your African city.",
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800",
+    alt: "Find Nearby",
+    icon: <MapPin size={20} />,
+  },
+  {
+    id: 3,
+    title: "African Business Network",
+    text: "Connect with authentic African businesses and entrepreneurs.",
+    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800",
+    alt: "Business Network",
+    icon: <BriefcaseBusiness size={20} />,
+  },
+];
+
+const ItemSkeleton = () => (
+  <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden animate-pulse">
+    <div className="h-40 bg-gray-200 dark:bg-gray-700"></div>
+    <div className="p-5 space-y-3">
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
     </div>
-    {subtitle && (
-      <p className="text-gray-600 dark:text-gray-400 max-w-2xl">{subtitle}</p>
-    )}
-  </motion.div>
-));
+  </div>
+);
 
-SectionHeader.displayName = 'SectionHeader';
+export default function ExplorePage() {
+  const [page, setPage] = useState(1);
+  const pageSize = 12;
 
-// ---- Custom Hooks ----
-const useTheme = () => {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [activeCategory, setActiveCategory] = useState<string>("All");
   
-  useEffect(() => {
-    const savedTheme = typeof window !== "undefined" 
-      ? localStorage.getItem("theme") as "light" | "dark" | null
-      : null;
-    
-    const initialTheme = savedTheme ?? 
-      (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light");
-    
-    setTheme(initialTheme);
-  }, []);
+  // African country and state filtering
+  const [selectedCountry, setSelectedCountry] = useState<string>("All");
+  const [selectedState, setSelectedState] = useState<string>("All");
+  const [showFilters, setShowFilters] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
-  useEffect(() => {
-    if (typeof document !== "undefined") {
-      document.documentElement.classList.toggle("dark", theme === "dark");
-      localStorage.setItem("theme", theme);
+  // Get current country data
+  const currentCountryData = africanCountryData.find(
+    c => c.name === selectedCountry
+  );
+  
+  // Get available categories based on selected country
+  const availableCategories = useMemo(() => {
+    if (selectedCountry === "All") {
+      const allCategories = new Set<string>();
+      africanCountryData.forEach(country => {
+        country.categories.forEach(cat => allCategories.add(cat));
+      });
+      return Array.from(allCategories).sort();
     }
-  }, [theme]);
+    return currentCountryData?.categories || [];
+  }, [selectedCountry, currentCountryData]);
 
-  return { theme, setTheme };
-};
-
-const useScrollToTop = () => {
-  const [showTopBtn, setShowTopBtn] = useState(false);
-
+  // Reset state when country changes
   useEffect(() => {
-    const handleScroll = () => {
-      setShowTopBtn(window.scrollY > SCROLL_THRESHOLD);
+    setSelectedState("All");
+    setActiveCategory("All");
+    setPage(1);
+  }, [selectedCountry]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [selectedState, activeCategory, searchQuery]);
+
+  // Handle responsive behavior
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 640);
     };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    
+    // Set initial value
+    handleResize();
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const scrollToTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-
-  return { showTopBtn, scrollToTop };
-};
-
-// ---- Data ----
-const useSlides = (): Slide[] => useMemo(() => [
-  {
-    id: 1,
-    title: "Discover Businesses Near You",
-    subtitle: "Find the best restaurants, shops, and services in your area.",
-    image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1920&auto=format&fit=crop",
-    alt: "Scenic landscape view of local businesses"
-  },
-  {
-    id: 2,
-    title: "Events, Jobs & Real Estate",
-    subtitle: "Everything happening around you — all in one place.",
-    image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1920&auto=format&fit=crop",
-    alt: "City skyline showing diverse opportunities"
-  },
-  {
-    id: 3,
-    title: "Grow with Contact365",
-    subtitle: "List your business and reach more local customers.",
-    image: "https://images.unsplash.com/photo-1496302662116-35cc4f36df92?q=80&w=1920&auto=format&fit=crop",
-    alt: "Business growth and networking concept"
-  },
-], []);
-
-const useFeatures = (): Feature[] => useMemo(() => [
-  {
-    id: 1,
-    icon: <MapPin size={28} aria-hidden="true" />,
-    title: "Discover",
-    text: "Find local businesses and services near you.",
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200&auto=format&fit=crop",
-    alt: "People discovering local businesses"
-  },
-  {
-    id: 2,
-    icon: <Users size={28} aria-hidden="true" />,
-    title: "Connect",
-    text: "Engage with trusted providers and communities.",
-    image: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1200&auto=format&fit=crop",
-    alt: "People connecting and networking"
-  },
-  {
-    id: 3,
-    icon: <Briefcase size={28} aria-hidden="true" />,
-    title: "Grow",
-    text: "Expand your business reach with Contact365.",
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200&auto=format&fit=crop",
-    alt: "Business growth and expansion"
-  },
-], []);
-
-const useRecommendedPlaces = (): Place[] => useMemo(() => [
-  {
-    id: 1,
-    name: "Ocean View Restaurant",
-    rating: 4.8,
-    category: "Restaurant",
-    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop",
-    alt: "Ocean View Restaurant interior"
-  },
-  {
-    id: 2,
-    name: "Sunset Lounge",
-    rating: 4.6,
-    category: "Bar",
-    image: "https://images.unsplash.com/photo-1481833761820-0509d3217039?q=80&w=1200&auto=format&fit=crop",
-    alt: "Sunset Lounge atmosphere"
-  },
-  {
-    id: 3,
-    name: "Coastal Spa",
-    rating: 4.9,
-    category: "Wellness",
-    image: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=1200&auto=format&fit=crop",
-    alt: "Coastal Spa treatment room"
-  },
-], []);
-
-const useRealEstates = (): RealEstate[] => useMemo(() => [
-  {
-    id: 1,
-    title: "Bright studio apartment to rent",
-    price: "$1,400",
-    term: "Per month",
-    size: "4800 sq ft",
-    rooms: "3 rooms",
-    baths: "2 bathrooms",
-    beds: "6 beds",
-    image: "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?q=80&w=1600&auto=format&fit=crop",
-    alt: "Bright studio apartment interior"
-  },
-  {
-    id: 2,
-    title: "Charming 1-bedroom flat for rent",
-    price: "$850",
-    term: "Per month",
-    size: "4800 sq ft",
-    rooms: "2 rooms",
-    baths: "2 bathrooms",
-    beds: "6 beds",
-    image: "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?q=80&w=1600&auto=format&fit=crop",
-    alt: "Charming 1-bedroom flat living area"
-  },
-  {
-    id: 3,
-    title: "Sunny, Modern room in East Village!",
-    price: "$2,800",
-    term: "Per month",
-    size: "4800 sq ft",
-    rooms: "1 room",
-    baths: "2 bathrooms",
-    beds: "6 beds",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop",
-    alt: "Modern room in East Village"
-  },
-], []);
-
-const useJobs = (): Job[] => useMemo(() => [
-  {
-    id: 1,
-    title: "Full stack developer",
-    contact: "+39 14 5214 22",
-    type: "Part time",
-    image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1600&auto=format&fit=crop",
-    alt: "Developer working on computer"
-  },
-  {
-    id: 2,
-    title: "Experienced project manager",
-    contact: "+39 14 5214 22",
-    type: "Internship",
-    image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1600&auto=format&fit=crop",
-    alt: "Project manager in meeting"
-  },
-  {
-    id: 3,
-    title: "UI/UX Designer",
-    contact: "+39 14 5214 22",
-    type: "Freelance",
-    image: "https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=1600&auto=format&fit=crop",
-    alt: "UI/UX designer working on designs"
-  },
-], []);
-
-// ---- Main Component ----
-export default function HomePage() {
-  const { theme, setTheme } = useTheme();
-  const { showTopBtn, scrollToTop } = useScrollToTop();
-  
-  // Data hooks
-  const slides = useSlides();
-  const features = useFeatures();
-  const recommendedPlaces = useRecommendedPlaces();
-  const realEstates = useRealEstates();
-  const jobs = useJobs();
-
-  // Slider state
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-
-  // Form states
-  const [searchForm, setSearchForm] = useState({
-    location: '',
-    category: 'All categories',
-    query: ''
+  const { items, loading } = useListings({
+    sort: "recent",
+    page,
+    pageSize,
+    category: activeCategory !== "All" ? activeCategory : undefined,
+    search: searchQuery,
+    country: selectedCountry !== "All" ? selectedCountry : undefined,
+    state: selectedState !== "All" ? selectedState : undefined,
+    baseCategories: availableCategories,
   });
 
-  // Slider controls
-  const nextSlide = useCallback(() => {
-    setActiveSlide((current) => (current + 1) % slides.length);
-  }, [slides.length]);
+  const adImages = [
+    "https://images.unsplash.com/photo-1607082349566-187342350d9f?w=600&q=80&auto=format",
+    "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=600&q=80&auto=format",
+    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80&auto=format",
+  ];
 
-  const prevSlide = useCallback(() => {
-    setActiveSlide((current) => (current - 1 + slides.length) % slides.length);
-  }, [slides.length]);
+  const featuredItems = useListings({ 
+    featured: true, 
+    limit: 10,
+    country: selectedCountry !== "All" ? selectedCountry : undefined,
+    state: selectedState !== "All" ? selectedState : undefined,
+  }).items;
+  
+  const trendingItems = useListings({ 
+    trending: true, 
+    limit: 10,
+    country: selectedCountry !== "All" ? selectedCountry : undefined,
+    state: selectedState !== "All" ? selectedState : undefined,
+  }).items;
 
-  const goToSlide = useCallback((index: number) => {
-    setActiveSlide(index);
-  }, []);
+  const allMatching = useListings({
+    search: searchQuery,
+    country: selectedCountry !== "All" ? selectedCountry : undefined,
+    state: selectedState !== "All" ? selectedState : undefined,
+    baseCategories: availableCategories,
+  }).items;
 
-  // Auto-play slider
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { All: allMatching.length };
+    const baseSet = new Set(availableCategories.map((c) => c.toLowerCase()));
+    
+    availableCategories.forEach((cat) => {
+      counts[cat] = allMatching.filter(
+        (item) => (item.category ?? "").toLowerCase() === cat.toLowerCase()
+      ).length;
+    });
+    
+    counts["Other"] = allMatching.filter((item) => {
+      const c = (item.category ?? "").toString().trim().toLowerCase();
+      return !c || !baseSet.has(c) || c === "other" || c === "others";
+    }).length;
+    
+    return counts;
+  }, [allMatching, availableCategories]);
+
+  const [heroIndex, setHeroIndex] = useState(0);
+  const nextSlide = () =>
+    setHeroIndex((i) => (i + 1) % (featuredItems.length || 1));
+  const prevSlide = () =>
+    setHeroIndex((i) =>
+      i === 0 ? (featuredItems.length || 1) - 1 : i - 1
+    );
+
   useEffect(() => {
-    if (!isAutoPlaying) return;
-
-    const interval = setInterval(nextSlide, SLIDE_INTERVAL);
+    if (featuredItems.length === 0) return;
+    const interval = setInterval(nextSlide, 6000);
     return () => clearInterval(interval);
-  }, [nextSlide, isAutoPlaying]);
+  }, [featuredItems.length]);
 
-  // Handle search form
-  const handleSearchSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Search submitted:', searchForm);
-    // Implement search logic here
-  }, [searchForm]);
-
-  const handleInputChange = useCallback((
-    field: keyof typeof searchForm, 
-    value: string
-  ) => {
-    setSearchForm(prev => ({ ...prev, [field]: value }));
-  }, []);
-
-  // Categories for search dropdown
-  const categories = useMemo(() => [
-    "All categories",
-    "Restaurants",
-    "Bars & Nightlife", 
-    "Shopping",
-    "Hotels",
-    "Activities",
-    "Services",
-    "Entertainment",
-    "Health & Beauty",
-    "Automotive",
-  ], []);
+  const filterButtons = ["All", ...availableCategories.slice(0, 8), "Other"];
 
   return (
-    <div className="w-full min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-x-hidden">
-      {/* Skip to main content for accessibility */}
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-purple-600 text-white px-4 py-2 rounded-md z-50">
-        Skip to main content
-      </a>
-
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
 
-      <main id="main-content">
-        {/* Hero Section */}
-        <section 
-          className="relative w-full h-[80vh] md:h-[85vh] overflow-hidden"
-          onMouseEnter={() => setIsAutoPlaying(false)}
-          onMouseLeave={() => setIsAutoPlaying(true)}
-          aria-label="Hero slider"
-        >
-          {slides.map((slide, index) => (
+      {/* Hero Section */}
+      {featuredItems.length > 0 && (
+        <div className="relative w-full h-[70vh] mb-12 overflow-hidden rounded-2xl shadow-lg flex items-center justify-center">
+          <AnimatePresence initial={false}>
             <motion.div
-              key={slide.id}
+              key={heroIndex}
               initial={{ opacity: 0 }}
-              animate={{ opacity: activeSlide === index ? 1 : 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1 }}
               className="absolute inset-0"
-              style={{
-                backgroundImage: `linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.55)), url(${slide.image})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-              aria-hidden={activeSlide !== index}
             >
-              <img 
-                src={slide.image} 
-                alt={slide.alt}
-                className="sr-only"
+              <img
+                src={featuredItems[heroIndex]?.image || "/fallback.jpg"}
+                alt={featuredItems[heroIndex]?.title || "Featured"}
+                className="w-full h-full object-cover"
               />
+              <div className="absolute inset-0 bg-black/60" />
             </motion.div>
-          ))}
+          </AnimatePresence>
 
-          <div className="relative z-10 h-full w-full flex flex-col items-center justify-center text-center px-4">
-            <motion.h1
-              className="text-4xl md:text-6xl font-extrabold text-white drop-shadow"
-              {...fadeInUp}
-            >
-              {slides[activeSlide].title}
-            </motion.h1>
-            <motion.p
-              className="mt-4 text-white/90 md:text-lg max-w-2xl"
-              {...fadeInUp}
-              transition={{ ...fadeInUp.transition, delay: 0.1 }}
-            >
-              {slides[activeSlide].subtitle}
-            </motion.p>
+          {/* Centered Content */}
+          <div className="relative z-10 text-center w-full max-w-4xl px-6">
+            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+              Discover African Businesses
+            </h1>
+            <p className="text-lg sm:text-xl text-gray-200 mb-6">
+              Connect with authentic African entrepreneurs and services across the continent.
+            </p>
 
-            {/* Enhanced Search Form */}
-            <motion.form
-              onSubmit={handleSearchSubmit}
-              className="mt-8 w-full max-w-4xl bg-white dark:bg-gray-900 rounded-xl shadow-lg p-2 flex flex-wrap md:flex-nowrap"
-              {...fadeInUp}
-              transition={{ ...fadeInUp.transition, delay: 0.2 }}
-            >
-              <div className="flex-1 flex items-center px-4 py-2 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-800">
-                <MapPin size={18} className="text-gray-400 mr-2" aria-hidden="true" />
+            {/* Enhanced Search Form with African Filters */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden w-full">
+              {/* Location and Category Filters */}
+              <div className="flex flex-col sm:flex-row">
+                {/* Country Selection */}
+                <div className="relative flex-1 border-b sm:border-b-0 sm:border-r">
+                  <div className="flex items-center gap-2 px-4 py-3">
+                    <Globe className="text-gray-400" size={18} />
+                    <select
+                      value={selectedCountry}
+                      onChange={(e) => setSelectedCountry(e.target.value)}
+                      className="flex-1 outline-none text-sm bg-transparent"
+                    >
+                      <option value="All">All African Countries</option>
+                      {africanCountryData.map((country) => (
+                        <option key={country.code} value={country.name}>
+                          {country.flag} {country.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* State Selection */}
+                <div className="relative flex-1 border-b sm:border-b-0 sm:border-r">
+                  <div className="flex items-center gap-2 px-4 py-3">
+                    <MapPin className="text-gray-400" size={18} />
+                    <select
+                      value={selectedState}
+                      onChange={(e) => setSelectedState(e.target.value)}
+                      disabled={selectedCountry === "All"}
+                      className="flex-1 outline-none text-sm bg-transparent disabled:opacity-50"
+                    >
+                      <option value="All">
+                        {selectedCountry === "All" ? "Select Country First" : "All States"}
+                      </option>
+                      {currentCountryData?.states.map((state) => (
+                        <option key={state} value={state}>
+                          {state}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Category Selection */}
+                <div className="flex-1 border-b sm:border-b-0 sm:border-r">
+                  <div className="flex items-center gap-2 px-4 py-3">
+                    <BriefcaseBusiness className="text-gray-400" size={18} />
+                    <select
+                      value={activeCategory}
+                      onChange={(e) => setActiveCategory(e.target.value)}
+                      className="flex-1 outline-none text-sm bg-transparent"
+                    >
+                      <option value="All">All Categories</option>
+                      {availableCategories.slice(0, 10).map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Search Input */}
+              <div className="flex items-center gap-2 px-4 py-3">
+                <Search className="text-gray-400" size={18} />
                 <input
                   type="text"
-                  placeholder="Enter location..."
-                  value={searchForm.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
-                  className="flex-1 bg-transparent outline-none text-gray-800 dark:text-gray-100"
-                  aria-label="Location"
+                  placeholder="Search for businesses, services, products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1 outline-none text-sm"
                 />
-              </div>
-              <div className="flex-1 flex items-center px-4 py-2 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-800">
-                <select 
-                  className="flex-1 bg-transparent outline-none text-gray-800 dark:text-gray-100"
-                  value={searchForm.category}
-                  onChange={(e) => handleInputChange('category', e.target.value)}
-                  aria-label="Category"
+                <button
+                  type="submit"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold transition"
                 >
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
+                  Search
+                </button>
               </div>
-              <div className="flex-1 flex items-center px-4 py-2">
-                <Search size={18} className="text-gray-400 mr-2" aria-hidden="true" />
-                <input
-                  type="text"
-                  placeholder="What are you looking for?"
-                  value={searchForm.query}
-                  onChange={(e) => handleInputChange('query', e.target.value)}
-                  className="flex-1 bg-transparent outline-none text-gray-800 dark:text-gray-100"
-                  aria-label="Search query"
-                />
-              </div>
-              <button 
-                type="submit"
-                className="ml-2 px-5 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 text-white font-semibold transition"
-                aria-label="Search"
-              >
-                Search
-              </button>
-            </motion.form>
+            </div>
+          </div>
 
-            {/* Slider Navigation */}
-            <div className="absolute bottom-6 left-0 right-0">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                {slides.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    className={`h-2 w-8 rounded-full transition ${
-                      activeSlide === index
-                        ? "bg-white"
-                        : "bg-white/50 hover:bg-white/70"
-                    }`}
-                    aria-label={`Go to slide ${index + 1}`}
+          {/* Slider Controls */}
+          <button
+            onClick={prevSlide}
+            className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-2 hover:bg-black/60 z-10"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-2 hover:bg-black/60 z-10"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      )}
+
+      {/* Features Section */}
+      <section className="w-full py-16 bg-white dark:bg-gray-950">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            {features.map((feature, index) => (
+              <motion.article
+                key={feature.id}
+                {...fadeInUp}
+                transition={{ ...fadeInUp.transition, delay: 0.1 * index }}
+                className="rounded-xl bg-gray-50 dark:bg-gray-900 shadow overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 focus-within:ring-2 focus-within:ring-purple-500"
+              >
+                <div className="relative h-40 overflow-hidden">
+                  <img
+                    src={feature.image}
+                    alt={feature.alt}
+                    className="absolute inset-0 w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
+                    loading="lazy"
                   />
+                </div>
+                <div className="p-6 text-center">
+                  <div className="mx-auto mb-4 inline-flex items-center justify-center rounded-full p-3 text-purple-600 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30">
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {feature.text}
+                  </p>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <main className="flex-1 max-w-7xl mx-auto px-6 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-3 space-y-10">
+            {/* Top Controls and Active Filters Display */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  Explore African Businesses
+                </h1>
+                {/* Active Filters Display */}
+                <div className="flex items-center gap-2 mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  {selectedCountry !== "All" && (
+                    <span className="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-1 rounded-full">
+                      {africanCountryData.find(c => c.name === selectedCountry)?.flag} {selectedCountry}
+                    </span>
+                  )}
+                  {selectedState !== "All" && (
+                    <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">
+                      {selectedState}
+                    </span>
+                  )}
+                  {activeCategory !== "All" && (
+                    <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">
+                      {activeCategory}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition sm:hidden"
+                >
+                  <Filter size={16} />
+                  Filters
+                </button>
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded-lg ${
+                    viewMode === "grid"
+                      ? "bg-purple-600 text-white"
+                      : "text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
+                >
+                  <Grid size={20} />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded-lg ${
+                    viewMode === "list"
+                      ? "bg-purple-600 text-white"
+                      : "text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
+                >
+                  <List size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Filters Panel */}
+            <AnimatePresence>
+              {(showFilters || isDesktop) && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm space-y-4"
+                >
+                  {/* Country and State Filters */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Country Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Country
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={selectedCountry}
+                          onChange={(e) => setSelectedCountry(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700"
+                        >
+                          <option value="All">All Countries</option>
+                          {africanCountryData.map((country) => (
+                            <option key={country.code} value={country.name}>
+                              {country.flag} {country.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* State Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        State/Region
+                      </label>
+                      <select
+                        value={selectedState}
+                        onChange={(e) => setSelectedState(e.target.value)}
+                        disabled={selectedCountry === "All"}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 disabled:opacity-50"
+                      >
+                        <option value="All">
+                          {selectedCountry === "All" ? "Select Country First" : "All States"}
+                        </option>
+                        {currentCountryData?.states.map((state) => (
+                          <option key={state} value={state}>
+                            {state}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Reset Filters */}
+                    <div className="flex items-end">
+                      <button
+                        onClick={() => {
+                          setSelectedCountry("All");
+                          setSelectedState("All");
+                          setActiveCategory("All");
+                          setSearchQuery("");
+                          setPage(1);
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                      >
+                        Reset Filters
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <Search
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      size={20}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Search businesses, services, products..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-transparent"
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Category Filter Buttons */}
+            <div className="flex flex-wrap gap-3">
+              {filterButtons.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                    activeCategory === cat
+                      ? "bg-purple-600 text-white shadow-md"
+                      : "bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900"
+                  }`}
+                >
+                  {cat} ({categoryCounts[cat] ?? 0})
+                </button>
+              ))}
+            </div>
+
+            {/* Featured Section */}
+            {featuredItems.length > 0 && (
+              <div className="mt-10">
+                <h2 className="text-xl font-bold flex items-center gap-2 mb-4 text-purple-700">
+                  <Sparkles size={20} /> Featured Businesses
+                  {selectedCountry !== "All" && (
+                    <span className="text-sm font-normal text-gray-500">
+                      in {selectedCountry}
+                    </span>
+                  )}
+                </h2>
+                <div className="relative">
+                  <div
+                    id="featured-carousel"
+                    className="flex overflow-x-auto gap-4 pb-3 no-scrollbar scroll-smooth"
+                  >
+                    {featuredItems.map((item) => (
+                      <Link key={item.id} href={`/${item.slug}`}>
+                        <div className="min-w-[200px] max-w-[200px] bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition">
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="h-32 w-full object-cover"
+                          />
+                          <div className="p-3">
+                            <h3 className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 mb-1">
+                              {item.title}
+                            </h3>
+                            <p className="text-xs text-gray-500 flex items-center gap-1">
+                              <MapPin size={12} /> {item.location}, {item.country}
+                            </p>
+                            <div className="flex items-center justify-between mt-2">
+                              <div className="flex items-center gap-1 text-yellow-500 text-xs">
+                                <Star size={12} fill="currentColor" />
+                                {item.rating}
+                              </div>
+                              {item.price && (
+                                <p className="text-purple-600 font-bold text-xs">
+                                  {item.price}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                  {featuredItems.length > 6 && (
+                    <>
+                      <button
+                        onClick={() =>
+                          document
+                            .getElementById("featured-carousel")
+                            ?.scrollBy({ left: -300, behavior: "smooth" })
+                        }
+                        className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 bg-purple-600 text-white shadow rounded-full p-2 hover:bg-purple-700"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+                      <button
+                        onClick={() =>
+                          document
+                            .getElementById("featured-carousel")
+                            ?.scrollBy({ left: 300, behavior: "smooth" })
+                        }
+                        className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 bg-purple-600 text-white shadow rounded-full p-2 hover:bg-purple-700"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Trending Section */}
+            {trendingItems.length > 0 && (
+              <div className="mt-10">
+                <h2 className="text-xl font-bold flex items-center gap-2 mb-4 text-red-600">
+                  <Flame size={20} /> Trending Now
+                  {selectedCountry !== "All" && (
+                    <span className="text-sm font-normal text-gray-500">
+                      in {selectedCountry}
+                    </span>
+                  )}
+                </h2>
+                <div className="relative">
+                  <div
+                    id="trending-carousel"
+                    className="flex overflow-x-auto gap-4 pb-3 no-scrollbar scroll-smooth"
+                  >
+                    {trendingItems.map((item) => (
+                      <Link key={item.id} href={`/${item.slug}`}>
+                        <div className="min-w-[200px] max-w-[200px] bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition">
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="h-32 w-full object-cover"
+                          />
+                          <div className="p-3">
+                            <h3 className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 mb-1">
+                              {item.title}
+                            </h3>
+                            <p className="text-xs text-gray-500 flex items-center gap-1">
+                              <MapPin size={12} /> {item.location}, {item.country}
+                            </p>
+                            <div className="flex items-center justify-between mt-2">
+                              <div className="flex items-center gap-1 text-yellow-500 text-xs">
+                                <Star size={12} fill="currentColor" />
+                                {item.rating}
+                              </div>
+                              {item.price && (
+                                <p className="text-purple-600 font-bold text-xs">
+                                  {item.price}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                  {trendingItems.length > 6 && (
+                    <>
+                      <button
+                        onClick={() =>
+                          document
+                            .getElementById("trending-carousel")
+                            ?.scrollBy({ left: -300, behavior: "smooth" })
+                        }
+                        className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 bg-red-600 text-white shadow rounded-full p-2 hover:bg-red-700"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+                      <button
+                        onClick={() =>
+                          document
+                            .getElementById("trending-carousel")
+                            ?.scrollBy({ left: 300, behavior: "smooth" })
+                        }
+                        className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 bg-red-600 text-white shadow rounded-full p-2 hover:bg-red-700"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* All Businesses Section */}
+            <div className="mt-12 bg-gray-100 dark:bg-gray-800 p-6 rounded-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-purple-700">
+                  <BriefcaseBusiness size={20} /> 
+                  {selectedCountry !== "All" 
+                    ? `Businesses in ${selectedCountry}${selectedState !== "All" ? `, ${selectedState}` : ""}`
+                    : "All African Businesses"
+                  }
+                </h2>
+                {searchQuery && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Search results for "{searchQuery}" • {allMatching.length} found
+                  </p>
+                )}
+              </div>
+
+              <AnimatePresence mode="wait">
+                {loading ? (
+                  <div
+                    className={`grid ${
+                      viewMode === "grid"
+                        ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                        : "grid-cols-1"
+                    } gap-6`}
+                  >
+                    {Array.from({ length: pageSize }).map((_, i) => (
+                      <ItemSkeleton key={i} />
+                    ))}
+                  </div>
+                ) : items.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="mx-auto w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                      <Search className="text-gray-400" size={32} />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                      No businesses found
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6">
+                      Try adjusting your filters or search terms.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSelectedCountry("All");
+                        setSelectedState("All");
+                        setActiveCategory("All");
+                        setSearchQuery("");
+                        setPage(1);
+                      }}
+                      className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                    >
+                      Clear All Filters
+                    </button>
+                  </div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className={`grid ${
+                      viewMode === "grid"
+                        ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                        : "grid-cols-1"
+                    } gap-6`}
+                  >
+                    {items.map((item, index) => (
+                      <Link key={item.id} href={`/${item.slug}`}>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          whileHover={{ scale: 1.02 }}
+                          className={`bg-white dark:bg-gray-700 rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 ${
+                            viewMode === "list" ? "flex gap-4" : ""
+                          }`}
+                        >
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className={`object-cover ${
+                              viewMode === "list" 
+                                ? "h-24 w-24 flex-shrink-0" 
+                                : "h-40 w-full"
+                            }`}
+                            loading="lazy"
+                          />
+                          <div className="p-4 flex-1">
+                            <div className="flex items-start justify-between mb-2">
+                              <h3 className="text-md font-semibold text-gray-900 dark:text-white line-clamp-2">
+                                {item.title}
+                              </h3>
+                              {(item.featured || item.trending) && (
+                                <div className="flex gap-1 ml-2">
+                                  {item.featured && (
+                                    <span className="bg-purple-100 text-purple-600 text-xs px-2 py-1 rounded-full">
+                                      Featured
+                                    </span>
+                                  )}
+                                  {item.trending && (
+                                    <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">
+                                      Trending
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            
+                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
+                              {item.description}
+                            </p>
+                            
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 text-sm text-gray-500">
+                                <MapPin size={14} /> 
+                                <span>{item.location}, {item.country}</span>
+                              </div>
+                              <div className="flex items-center gap-1 text-yellow-500 text-sm">
+                                <Star size={14} fill="currentColor" />
+                                {item.rating}
+                              </div>
+                            </div>
+                            
+                            {item.price && (
+                              <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-600">
+                                <p className="text-purple-600 font-bold text-sm">
+                                  {item.price}
+                                </p>
+                              </div>
+                            )}
+                            
+                            <div className="mt-2">
+                              <span className="inline-block bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-xs px-2 py-1 rounded-full">
+                                {item.category}
+                              </span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Pagination */}
+              {!loading && items.length > 0 && (
+                <div className="flex justify-between items-center mt-8">
+                  <button
+                    disabled={page === 1}
+                    onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white disabled:opacity-50 hover:bg-purple-700 transition disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft size={16} />
+                    Previous
+                  </button>
+                  
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">
+                      Page {page}
+                    </span>
+                    {items.length === pageSize && (
+                      <span className="text-gray-500 text-sm">
+                        • Showing {(page - 1) * pageSize + 1}-{page * pageSize} results
+                      </span>
+                    )}
+                  </div>
+                  
+                  <button
+                    disabled={items.length < pageSize}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white disabled:opacity-50 hover:bg-purple-700 transition disabled:cursor-not-allowed"
+                  >
+                    Next
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <aside className="hidden lg:block lg:col-span-1 space-y-6 sticky top-24 h-fit">
+            {/* Quick Country Stats */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                African Business Hub
+              </h3>
+              <div className="space-y-3">
+                {africanCountryData.slice(0, 5).map((country) => {
+                  const countryBusinesses = allMatching.filter(item => item.country === country.name);
+                  return (
+                    <div key={country.code} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{country.flag}</span>
+                        <span className="text-sm font-medium">{country.name}</span>
+                      </div>
+                      <span className="text-sm text-purple-600 font-semibold">
+                        {countryBusinesses.length}
+                      </span>
+                    </div>
+                  );
+                })}
+                <button
+                  onClick={() => setSelectedCountry("All")}
+                  className="w-full mt-3 text-sm text-purple-600 hover:text-purple-700 font-medium"
+                >
+                  View all countries →
+                </button>
+              </div>
+            </div>
+
+            {/* Popular Categories */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Popular Categories
+              </h3>
+              <div className="space-y-2">
+                {availableCategories.slice(0, 8).map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setActiveCategory(category)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
+                      activeCategory === category
+                        ? "bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    {category} ({categoryCounts[category] || 0})
+                  </button>
                 ))}
               </div>
-              
-              <div className="flex items-center justify-center gap-4">
-                <button
-                  onClick={prevSlide}
-                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition"
-                  aria-label="Previous slide"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <button
-                  onClick={nextSlide}
-                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition"
-                  aria-label="Next slide"
-                >
-                  <ChevronRight size={20} />
-                </button>
-              </div>
             </div>
-          </div>
-        </section>
 
-        {/* Features Section */}
-        <section className="w-full py-16 bg-white dark:bg-gray-950">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-              {features.map((feature, index) => (
-                <motion.article
-                  key={feature.id}
-                  {...fadeInUp}
-                  transition={{ ...fadeInUp.transition, delay: 0.1 * index }}
-                  className="rounded-xl bg-gray-50 dark:bg-gray-900 shadow overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 focus-within:ring-2 focus-within:ring-purple-500"
-                >
-                  <div className="relative h-40 overflow-hidden">
-                    <img
-                      src={feature.image}
-                      alt={feature.alt}
-                      className="absolute inset-0 w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="p-6 text-center">
-                    <div className="mx-auto mb-4 inline-flex items-center justify-center rounded-full p-3 text-purple-600 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30">
-                      {feature.icon}
-                    </div>
-                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-gray-600 dark:text-gray-400">{feature.text}</p>
-                  </div>
-                </motion.article>
+            {/* Sponsored Ads */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Sponsored
+              </h3>
+              {adImages.map((src, idx) => (
+                <AdBanner
+                  key={idx}
+                  localSrc={src}
+                  alt={`Sponsored Content ${idx + 1}`}
+                  height={idx === 1 ? 400 : 250}
+                />
               ))}
+              <AdBanner client="ca-pub-xxxxxxxxxx" slot="1234567890" />
             </div>
-          </div>
-        </section>
-
-        {/* What's happening Section */}
-        <section className="w-full py-16 bg-gray-100 dark:bg-gray-900">
-          <div className="container mx-auto px-4 md:px-6">
-            <SectionHeader
-              icon={<Calendar size={22} className="text-purple-600 dark:text-purple-300" />}
-              title="What's happening?"
-              subtitle="Handpicked places trending around you"
-            />
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-              {recommendedPlaces.map((place, index) => (
-                <motion.article
-                  key={place.id}
-                  {...fadeInUp}
-                  transition={{ ...fadeInUp.transition, delay: 0.1 * index }}
-                  className="rounded-xl overflow-hidden bg-white dark:bg-gray-950 shadow hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-purple-500"
-                >
-                  <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={place.image}
-                      alt={place.alt}
-                      className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-lg font-semibold mb-1">{place.name}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                      {place.category}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <Star size={16} className="text-yellow-400 fill-current" aria-hidden="true" />
-                      <span className="text-gray-700 dark:text-gray-300" aria-label={`Rating: ${place.rating} out of 5 stars`}>
-                        {place.rating}
-                      </span>
-                    </div>
-                  </div>
-                </motion.article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Real Estate Section */}
-        <section className="w-full py-16 bg-white dark:bg-gray-950">
-          <div className="container mx-auto px-4 md:px-6">
-            <SectionHeader
-              icon={<HomeIcon size={22} className="text-purple-600 dark:text-purple-300" />}
-              title="Real Estate"
-              subtitle="Looking for properties to rent?"
-            />
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-              {realEstates.map((estate, index) => (
-                <motion.article
-                  key={estate.id}
-                  {...fadeInUp}
-                  transition={{ ...fadeInUp.transition, delay: 0.1 * index }}
-                  className="rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-900 shadow hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-purple-500"
-                >
-                  <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={estate.image}
-                      alt={estate.alt}
-                      className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-lg font-semibold mb-2">{estate.title}</h3>
-                    <div className="flex items-baseline gap-2 mb-3">
-                      <span className="text-xl font-bold text-purple-600 dark:text-purple-400">
-                        {estate.price}
-                      </span>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {estate.term}
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 grid grid-cols-2 gap-y-1">
-                      <span>{estate.size}</span>
-                      <span>{estate.rooms}</span>
-                      <span>{estate.baths}</span>
-                      <span>{estate.beds}</span>
-                    </div>
-                  </div>
-                </motion.article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Job Openings Section */}
-        <section className="w-full py-16 bg-gray-100 dark:bg-gray-900">
-          <div className="container mx-auto px-4 md:px-6">
-            <SectionHeader
-              icon={<Briefcase size={22} className="text-purple-600 dark:text-purple-300" />}
-              title="Job openings"
-              subtitle="Find job openings near you"
-            />
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-              {jobs.map((job, index) => (
-                <motion.article
-                  key={job.id}
-                  {...fadeInUp}
-                  transition={{ ...fadeInUp.transition, delay: 0.1 * index }}
-                  className="rounded-xl overflow-hidden bg-white dark:bg-gray-950 shadow hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-purple-500"
-                >
-                  <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={job.image}
-                      alt={job.alt}
-                      className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-lg font-semibold mb-1">{job.title}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                      {job.type}
-                    </p>
-                    <p className="font-medium text-purple-600 dark:text-purple-400">
-                      <a href={`tel:${job.contact}`} className="hover:underline">
-                        {job.contact}
-                      </a>
-                    </p>
-                  </div>
-                </motion.article>
-              ))}
-            </div>
-          </div>
-        </section>
+          </aside>
+        </div>
 
         {/* CTA Section */}
         <section
-          className="w-full py-20 relative text-white text-center"
+          className="w-full py-20 mt-16 relative text-white text-center rounded-2xl overflow-hidden"
           style={{
             backgroundImage:
               "linear-gradient(rgba(88,28,135,0.85), rgba(88,28,135,0.85)), url(https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1600&auto=format&fit=crop)",
@@ -687,48 +952,28 @@ export default function HomePage() {
         >
           <motion.div {...fadeInUp} className="relative z-10 container mx-auto px-4">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Grow your business with Contact365
+              Grow Your African Business with Contact365
             </h2>
             <p className="mb-8 opacity-90 text-lg max-w-2xl mx-auto">
-              Join thousands of businesses already listed and start reaching more local customers today.
+              Join thousands of African businesses already listed and start reaching more customers across the continent today.
             </p>
-           
-
-             <Link href="/add-listing">
-            <button className="px-4 py-2 rounded-lg bg-white  text-purple-700 font-semibold px-8 py-4 rounded-lg hover:bg-gray-200 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-purple-700 transition-all transform hover:scale-105">
-              Add Listing
-            </button>
-          </Link>
-          
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/add-listing">
+                <button className="bg-white text-purple-700 font-semibold px-8 py-4 rounded-lg hover:bg-gray-100 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-purple-700 transition-all transform hover:scale-105">
+                  List Your Business
+                </button>
+              </Link>
+              <Link href="/businesses">
+                <button className="border-2 border-white text-white font-semibold px-8 py-4 rounded-lg hover:bg-white hover:text-purple-700 transition-all transform hover:scale-105">
+                  Browse All Businesses
+                </button>
+              </Link>
+            </div>
           </motion.div>
         </section>
       </main>
 
       <Footer />
-
-      {/* Back to Top Button */}
-      <motion.button
-        onClick={scrollToTop}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={
-          showTopBtn
-            ? {
-                opacity: 1,
-                scale: [1, 1.1, 1],
-              }
-            : { opacity: 0, scale: 0.8 }
-        }
-        transition={{
-          duration: 0.6,
-          ease: "easeInOut",
-          repeat: showTopBtn ? Infinity : 0,
-          repeatType: "mirror",
-        }}
-        className="fixed bottom-6 right-6 p-3 rounded-full bg-purple-600 hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 text-white shadow-lg z-50"
-        aria-label="Back to top"
-      >
-        <ArrowUp className="w-5 h-5" />
-      </motion.button>
     </div>
   );
-} 
+}
