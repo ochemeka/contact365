@@ -1,6 +1,5 @@
 // src/hooks/useListings.ts
 "use client";
-
 import { useEffect, useState } from "react";
 import { listingsData, Business } from "../listings/businesses";
 
@@ -24,7 +23,6 @@ export function useListings(options: Options = {}) {
 
   useEffect(() => {
     setLoading(true);
-
     let data = [...listingsData];
 
     // filter by country
@@ -47,7 +45,6 @@ export function useListings(options: Options = {}) {
     // filter by category (with "Other" support)
     if (options.category) {
       const selected = options.category.trim().toLowerCase();
-
       if (selected === "other" || selected === "others") {
         data = data.filter((b) => {
           const c = (b.category ?? "").toString().trim().toLowerCase();
@@ -81,11 +78,12 @@ export function useListings(options: Options = {}) {
       );
     }
 
-    // sort
+    // sort - FIXED: Since Business.id is always number, use numeric sorting
     if (options.sort === "rating") {
       data.sort((a, b) => b.rating - a.rating);
     } else {
-      data.sort((a, b) => a.id - b.id); // ✅ numeric-only safe sort
+      // Default sort by id (most recent first - descending order)
+      data.sort((a, b) => b.id - a.id);
     }
 
     // pagination
