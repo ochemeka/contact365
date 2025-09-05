@@ -84,15 +84,9 @@ export function useListings(options: Options = {}) {
     // sort
     if (options.sort === "rating") {
       data.sort((a, b) => b.rating - a.rating);
-  } else {
-  data.sort((a, b) => {
-    if (typeof b.id === "string" && typeof a.id === "string") {
-      return b.id.localeCompare(a.id);
+    } else {
+      data.sort((a, b) => a.id - b.id); // ✅ numeric-only safe sort
     }
-    return Number(b.id) - Number(a.id); // numeric-safe
-  });
-}
-
 
     // pagination
     if (options.page && options.pageSize) {
