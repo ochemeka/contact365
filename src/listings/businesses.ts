@@ -6,7 +6,7 @@ export interface Business {
   description: string;
   category: string;
   country: string;
-  location: string; // state / city
+  location: string;
   rating: number;
   featured?: boolean;
   trending?: boolean;
@@ -15,10 +15,9 @@ export interface Business {
   phone?: string;
   whatsapp?: string;
   slug?: string;
-  mapEmbed?: string;   // 👈 already added
-  currency?: string;   // 👈 add this new field
+  mapEmbed?: string;
+  currency?: string;
 }
-
 
 
 export const africanCountryData = [

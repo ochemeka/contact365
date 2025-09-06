@@ -79,12 +79,11 @@ export function useListings(options: Options = {}) {
     }
 
     // sort - FIXED: Since Business.id is always number, use numeric sorting
-    if (options.sort === "rating") {
-      data.sort((a, b) => b.rating - a.rating);
-    } else {
-      // Default sort by id (most recent first - descending order)
-      data.sort((a, b) => b.id - a.id);
-    }
+    // Make sure your sort function uses the fixed version:
+data.sort((a, b) => {
+  // Since Business.id is always number, use numeric sorting
+  return b.id - a.id; // Most recent first
+});
 
     // pagination
     if (options.page && options.pageSize) {
