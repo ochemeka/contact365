@@ -14,7 +14,8 @@ import {
   MessageCircle,
 } from "lucide-react";
 
-import { listingsData } from "../../listings/businesses";
+// Fix: Use consistent import names
+import { africanListingsData, Business } from "../../listings/businesses";
 import ReviewCard from "../../components/ReviewCard";
 import EventCard from "../../components/EventCard";
 import JobCard from "../../components/JobCard";
@@ -24,7 +25,8 @@ import Footer from "../../components/Footer";
 
 export default function BusinessProfilePage() {
   const { slug } = useParams();
-  const business = listingsData.find((b) => b.slug === slug);
+  // Fix: Use the correct data variable name
+  const business = africanListingsData.find((b) => b.slug === slug);
   const [activeTab, setActiveTab] = useState<
     "Profile" | "Reviews" | "Events" | "Jobs" | "Store"
   >("Profile");
@@ -44,35 +46,32 @@ export default function BusinessProfilePage() {
     );
 
   // Mock Data
-// Example inside src/app/[slug]/page.tsx
-
-const reviews = [
-  {
-    name: "Jane Doe",
-    rating: 5,
-    comment: "Amazing service! Highly recommended.",
-    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-  },
-  {
-    name: "John Smith",
-    rating: 4,
-    comment: "Great experience overall, will use again.",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-  },
-  {
-    name: "Amaka Obi",
-    rating: 5,
-    comment: "Excellent customer support and fast delivery.",
-    // no avatar → fallback initials
-  },
-  {
-    name: "Chinedu Okafor",
-    rating: 3,
-    comment: "Good product but shipping took longer than expected.",
-    // no avatar → fallback initials
-  },
-];
-
+  const reviews = [
+    {
+      name: "Jane Doe",
+      rating: 5,
+      comment: "Amazing service! Highly recommended.",
+      avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    },
+    {
+      name: "John Smith",
+      rating: 4,
+      comment: "Great experience overall, will use again.",
+      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    },
+    {
+      name: "Amaka Obi",
+      rating: 5,
+      comment: "Excellent customer support and fast delivery.",
+      // no avatar → fallback initials
+    },
+    {
+      name: "Chinedu Okafor",
+      rating: 3,
+      comment: "Good product but shipping took longer than expected.",
+      // no avatar → fallback initials
+    },
+  ];
 
   const events = [
     { title: "Networking Night", date: "Sept 15, 2025" },
@@ -95,13 +94,20 @@ const reviews = [
     alt: `Gallery Image ${i + 1}`,
   }));
 
-  const relatedPages = listingsData
+  const relatedPages = africanListingsData
     .filter((b) => b.slug !== slug)
     .slice(0, 4)
     .map((b, i) => ({
       ...b,
       image: `https://picsum.photos/400/300?random=${i + 10}`,
     }));
+
+  // Fix: Safely access website property
+  const getWebsiteUrl = (business: Business): string => {
+    return 'website' in business && typeof (business as any).website === 'string' 
+      ? (business as any).website 
+      : "#";
+  };
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col">
@@ -111,7 +117,7 @@ const reviews = [
         {/* Hero Section */}
         <div className="relative w-full h-[400px] md:h-[500px]">
           <img
-            src={`https://picsum.photos/1200/500?random=20`}
+            src={business.image || `https://picsum.photos/1200/500?random=20`}
             alt={business.title}
             className="w-full h-full object-cover"
           />
@@ -128,7 +134,7 @@ const reviews = [
           {[
             { icon: MessageCircle, label: "Message", href: `/chat/${business.id}` },
             { icon: Phone, label: "Call", href: "#" },
-            { icon: Globe, label: "Website", href: (business as any).website || "#" },
+            { icon: Globe, label: "Website", href: getWebsiteUrl(business) },
             { icon: Bookmark, label: "Save", href: "#" },
             { icon: Share2, label: "Share", href: "#" },
             { icon: ShieldCheck, label: "Claim", href: "#" },
@@ -144,6 +150,7 @@ const reviews = [
           ))}
         </div>
 
+        {/* Rest of your component remains the same... */}
         {/* Tabs */}
         <div className="max-w-6xl mx-auto px-4 flex w-full bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
           {["Profile", "Reviews", "Events", "Jobs", "Store"].map((tab) => (
@@ -273,7 +280,7 @@ const reviews = [
                     <h3 className="text-xl font-semibold mb-2">Price Range</h3>
                     <p className="text-gray-700 dark:text-gray-300">
                       {business.currency}{" "}
-                      {business.price.toLocaleString()}
+                      {typeof business.price === 'number' ? business.price.toLocaleString() : business.price}
                     </p>
                   </div>
                 )}
@@ -358,7 +365,7 @@ const reviews = [
                     <p className="text-sm text-gray-200">{b.category}</p>
                     {b.price && b.currency && (
                       <p className="text-sm text-purple-400 mt-1">
-                        {b.currency} {b.price.toLocaleString()}
+                        {b.currency} {typeof b.price === 'number' ? b.price.toLocaleString() : b.price}
                       </p>
                     )}
                   </div>

@@ -1,5 +1,6 @@
 // src/listings/businesses.ts
 
+// Business interface
 export interface Business {
   id: number;
   title: string;
@@ -18,6 +19,11 @@ export interface Business {
   mapEmbed?: string;
   currency?: string;
 }
+
+// Sample business data
+export const businessData: Business[] = [
+  // ... your business data here
+];
 
 
 export const africanCountryData = [
