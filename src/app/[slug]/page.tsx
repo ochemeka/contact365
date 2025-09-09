@@ -150,7 +150,6 @@ export default function BusinessProfilePage() {
           ))}
         </div>
 
-        {/* Rest of your component remains the same... */}
         {/* Tabs */}
         <div className="max-w-6xl mx-auto px-4 flex w-full bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
           {["Profile", "Reviews", "Events", "Jobs", "Store"].map((tab) => (
@@ -274,13 +273,12 @@ export default function BusinessProfilePage() {
                   </p>
                 </div>
 
-                {/* Pricing */}
-                {business.price && business.currency && (
+                {/* Pricing - FIXED */}
+                {business.price && (
                   <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
                     <h3 className="text-xl font-semibold mb-2">Price Range</h3>
                     <p className="text-gray-700 dark:text-gray-300">
-                      {business.currency}{" "}
-                      {typeof business.price === 'number' ? business.price.toLocaleString() : business.price}
+                      {business.price}
                     </p>
                   </div>
                 )}
@@ -348,7 +346,7 @@ export default function BusinessProfilePage() {
           )}
         </div>
 
-        {/* Related Pages */}
+        {/* Related Pages - FIXED */}
         <div className="max-w-6xl mx-auto px-4 py-8 space-y-4">
           <h3 className="text-xl font-semibold">View Related Pages</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -363,9 +361,9 @@ export default function BusinessProfilePage() {
                   <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
                     <h4 className="text-white font-semibold">{b.title}</h4>
                     <p className="text-sm text-gray-200">{b.category}</p>
-                    {b.price && b.currency && (
+                    {b.price && (
                       <p className="text-sm text-purple-400 mt-1">
-                        {b.currency} {typeof b.price === 'number' ? b.price.toLocaleString() : b.price}
+                        {b.price}
                       </p>
                     )}
                   </div>
