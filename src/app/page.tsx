@@ -237,89 +237,117 @@ export default function ExplorePage() {
             </p>
 
             {/* Enhanced Search Form with African Filters */}
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden w-full">
-              {/* Location and Category Filters */}
-              <div className="flex flex-col sm:flex-row">
-                {/* Country Selection */}
-                <div className="relative flex-1 border-b sm:border-b-0 sm:border-r">
-                  <div className="flex items-center gap-2 px-4 py-3">
-                    <Globe className="text-gray-400" size={18} />
-                    <select
-                      value={selectedCountry}
-                      onChange={(e) => setSelectedCountry(e.target.value)}
-                      className="flex-1 outline-none text-sm bg-transparent"
-                    >
-                      <option value="All">All African Countries</option>
-                      {africanCountryData.map((country) => (
-                        <option key={country.code} value={country.name}>
-                          {country.flag} {country.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+           /* Fixed Search Form with proper dark mode support */
+<div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden w-full">
+  {/* Location and Category Filters */}
+  <div className="flex flex-col sm:flex-row">
+    {/* Country Selection */}
+    <div className="relative flex-1 border-b sm:border-b-0 sm:border-r border-gray-200 dark:border-gray-700">
+      <div className="flex items-center gap-2 px-4 py-3">
+        <Globe className="text-gray-400 dark:text-gray-500" size={18} />
+        <select
+          value={selectedCountry}
+          onChange={(e) => setSelectedCountry(e.target.value)}
+          className="flex-1 outline-none text-sm bg-transparent text-gray-900 dark:text-white"
+        >
+          <option value="All" className="text-gray-900 dark:text-white bg-white dark:bg-gray-800">
+            All African Countries
+          </option>
+          {africanCountryData.map((country) => (
+            <option 
+              key={country.code} 
+              value={country.name}
+              className="text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+            >
+              {country.flag} {country.name}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
 
-                {/* State Selection */}
-                <div className="relative flex-1 border-b sm:border-b-0 sm:border-r">
-                  <div className="flex items-center gap-2 px-4 py-3">
-                    <MapPin className="text-gray-400" size={18} />
-                    <select
-                      value={selectedState}
-                      onChange={(e) => setSelectedState(e.target.value)}
-                      disabled={selectedCountry === "All"}
-                      className="flex-1 outline-none text-sm bg-transparent disabled:opacity-50"
-                    >
-                      <option value="All">
-                        {selectedCountry === "All" ? "Select Country First" : "All States"}
-                      </option>
-                      {currentCountryData?.states.map((state) => (
-                        <option key={state} value={state}>
-                          {state}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+    {/* State Selection */}
+    <div className="relative flex-1 border-b sm:border-b-0 sm:border-r border-gray-200 dark:border-gray-700">
+      <div className="flex items-center gap-2 px-4 py-3">
+        <MapPin className="text-gray-400 dark:text-gray-500" size={18} />
+        <select
+          value={selectedState}
+          onChange={(e) => setSelectedState(e.target.value)}
+          disabled={selectedCountry === "All"}
+          className="flex-1 outline-none text-sm bg-transparent disabled:opacity-50 text-gray-900 dark:text-white"
+        >
+          <option 
+            value="All"
+            className="text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+          >
+            {selectedCountry === "All" ? "Select Country First" : "All States"}
+          </option>
+          {currentCountryData?.states.map((state) => (
+            <option 
+              key={state} 
+              value={state}
+              className="text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+            >
+              {state}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
 
-                {/* Category Selection */}
-                <div className="flex-1 border-b sm:border-b-0 sm:border-r">
-                  <div className="flex items-center gap-2 px-4 py-3">
-                    <BriefcaseBusiness className="text-gray-400" size={18} />
-                    <select
-                      value={activeCategory}
-                      onChange={(e) => setActiveCategory(e.target.value)}
-                      className="flex-1 outline-none text-sm bg-transparent"
-                    >
-                      <option value="All">All Categories</option>
-                      {availableCategories.slice(0, 10).map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
+    {/* Category Selection */}
+    <div className="flex-1 border-b sm:border-b-0 sm:border-r border-gray-200 dark:border-gray-700">
+      <div className="flex items-center gap-2 px-4 py-3">
+        <BriefcaseBusiness className="text-gray-400 dark:text-gray-500" size={18} />
+        <select
+          value={activeCategory}
+          onChange={(e) => setActiveCategory(e.target.value)}
+          className="flex-1 outline-none text-sm bg-transparent text-gray-900 dark:text-white"
+        >
+          <option 
+            value="All"
+            className="text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+          >
+            All Categories
+          </option>
+          {availableCategories.slice(0, 10).map((cat) => (
+            <option 
+              key={cat} 
+              value={cat}
+              className="text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+            >
+              {cat}
+            </option>
+          ))}
+          <option 
+            value="Other"
+            className="text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+          >
+            Other
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
 
-              {/* Search Input */}
-              <div className="flex items-center gap-2 px-4 py-3">
-                <Search className="text-gray-400" size={18} />
-                <input
-                  type="text"
-                  placeholder="Search for businesses, services, products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 outline-none text-sm"
-                />
-                <button
-                  type="submit"
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                >
-                  Search
-                </button>
-              </div>
-            </div>
+  {/* Search Input */}
+  <div className="flex items-center gap-2 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+    <Search className="text-gray-400 dark:text-gray-500" size={18} />
+    <input
+      type="text"
+      placeholder="Search for businesses, services, products..."
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      className="flex-1 outline-none text-sm bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+    />
+    <button
+      type="submit"
+      className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+    >
+      Search
+    </button>
+  </div>
+</div>
           </div>
 
           {/* Slider Controls */}
