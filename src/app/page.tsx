@@ -205,7 +205,7 @@ export default function ExplorePage() {
 
       {/* Hero Section */}
       {featuredItems.length > 0 && (
-        <div className="relative w-full h-[70vh] mb-12 overflow-hidden rounded-2xl shadow-lg flex items-center justify-center">
+        <div className="relative w-full h-[70vh] mt-10 mb-12 overflow-hidden rounded-2xl shadow-lg flex items-center justify-center">
           <AnimatePresence initial={false}>
             <motion.div
               key={heroIndex}
