@@ -1,4 +1,4 @@
-@tailwind base;
+/* @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -15,4 +15,66 @@ body {
   animation: spin-slower 20s linear infinite;
 }
 
+} */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+html {
+  height: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* Ensure main content takes available space */
+main {
+  flex: 1;
+  width: 100%;
+}
+
+/* Footer always at bottom and fully visible on mobile */
+footer {
+  margin-top: auto;
+  width: 100%;
+}
+
+/* Mobile safe area padding */
+@media (max-width: 640px) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+}
+
+/* Custom animations */
+@keyframes spin-slower {
+  0% { 
+    startOffset: 0%; 
+  }
+  100% { 
+    startOffset: 100%; 
+  }
+}
+
+.animate-spin-slower {
+  animation: spin-slower 20s linear infinite;
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
