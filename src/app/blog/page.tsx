@@ -81,7 +81,7 @@ export default function BlogPage() {
               placeholder="Search articles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-full border border-gray-300 dark:border-gray-700 px-5 py-2 pr-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full rounded-full border border-gray-300 dark:border-gray-700 px-5 py-2 pr-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
             <Search
               size={18}
@@ -98,8 +98,8 @@ export default function BlogPage() {
               onClick={() => setSelectedCategory(cat)}
               className={`px-4 py-2 text-sm font-medium rounded-full transition ${
                 selectedCategory === cat
-                  ? "bg-purple-600 text-white shadow-md"
-                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-purple-100 dark:hover:bg-gray-600"
+                  ? "bg-green-600 text-white shadow-md"
+                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-green-100 dark:hover:bg-gray-600"
               }`}
             >
               {cat}
@@ -125,11 +125,11 @@ export default function BlogPage() {
                 </Link>
 
                 <div className="p-5 flex flex-col flex-1">
-                  <span className="text-xs font-semibold uppercase text-purple-600">
+                  <span className="text-xs font-semibold uppercase text-green-600">
                     {post.category}
                   </span>
                   <Link href={`/blog/${post.id}`}>
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mt-2 line-clamp-2 hover:text-purple-600 transition">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mt-2 line-clamp-2 hover:text-green-600 transition">
                       {post.title}
                     </h2>
                   </Link>

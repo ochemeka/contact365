@@ -34,9 +34,9 @@ export default function Header() {
   ];
 
   const linkClass = (href: string) =>
-    `relative transition hover:text-purple-600 dark:hover:text-purple-400 ${
+    `relative transition hover:text-green-600 dark:hover:text-green-400 ${
       pathname === href
-        ? "text-purple-600 dark:text-purple-400 font-semibold after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:bg-purple-600 dark:after:bg-purple-400 after:rounded"
+        ? "text-green-600 dark:text-green-400 font-semibold after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:bg-green-600 dark:after:bg-green-400 after:rounded"
         : ""
     }`;
 
@@ -79,20 +79,20 @@ export default function Header() {
           </button>
 
           {/* Auth Links */}
-          <Link href="/signin">
-            <button className="px-4 py-2 rounded-lg border border-purple-600 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition">
+          <Link href="/auth/signin">
+            <button className="px-4 py-2 rounded-lg border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 transition">
               Sign In
             </button>
           </Link>
-          <Link href="/signup">
-            <button className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-medium transition">
+          <Link href="/auth/signup">
+            <button className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium transition">
               Sign Up
             </button>
           </Link>
 
           {/* Add Listing CTA */}
           <Link href="/add-listing">
-            <button className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-medium transition">
+            <button className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium transition">
               Post your Ads+
             </button>
           </Link>

@@ -61,21 +61,21 @@ export default function ContactPage() {
               </p>
 
               <div className="flex items-center gap-3">
-                <Mail className="text-purple-600 dark:text-purple-400" />
+                <Mail className="text-green-600 dark:text-green-400" />
                 <span className="text-gray-700 dark:text-gray-200">
                   support@contact365.com
                 </span>
               </div>
 
               <div className="flex items-center gap-3">
-                <Phone className="text-purple-600 dark:text-purple-400" />
+                <Phone className="text-green-600 dark:text-green-400" />
                 <span className="text-gray-700 dark:text-gray-200">
                   +234 800 123 4567
                 </span>
               </div>
 
               <div className="flex items-center gap-3">
-                <MapPin className="text-purple-600 dark:text-purple-400" />
+                <MapPin className="text-green-600 dark:text-green-400" />
                 <span className="text-gray-700 dark:text-gray-200">
                   Lagos, Nigeria
                 </span>
@@ -119,7 +119,7 @@ export default function ContactPage() {
                   onChange={handleChange}
                   required
                   whileFocus={{ scale: 1.02 }}
-                  className="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:ring-purple-500 focus:border-purple-500"
+                  className="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:ring-green-500 focus:border-green-500"
                 />
               </div>
 
@@ -134,7 +134,7 @@ export default function ContactPage() {
                   onChange={handleChange}
                   required
                   whileFocus={{ scale: 1.02 }}
-                  className="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:ring-purple-500 focus:border-purple-500"
+                  className="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:ring-green-500 focus:border-green-500"
                 />
               </div>
 
@@ -149,7 +149,7 @@ export default function ContactPage() {
                   onChange={handleChange}
                   required
                   whileFocus={{ scale: 1.02 }}
-                  className="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:ring-purple-500 focus:border-purple-500"
+                  className="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:ring-green-500 focus:border-green-500"
                 ></motion.textarea>
               </div>
 
@@ -157,7 +157,7 @@ export default function ContactPage() {
                 type="submit"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition"
+                className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition"
               >
                 Send Message
               </motion.button>
