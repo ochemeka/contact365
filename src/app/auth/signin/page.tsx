@@ -24,7 +24,7 @@ export default function SignInPage() {
       <div className="w-full max-w-4xl bg-white rounded-2xl shadow-lg flex overflow-hidden">
         
         {/* Left Side - Image Section (hide on small) */}
-        <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+        <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-slate-900 via-green-900 to-slate-900">
           <a className="absolute top-6 left-6 z-20" href="/">
             <img
               src="/images/contact365logo-light.png"
@@ -40,7 +40,9 @@ export default function SignInPage() {
           <div className="relative z-10 flex items-end p-8">
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">Join Contact365</h1>
-              <p className="text-blue-100 text-base">Start managing your contacts today.</p>
+              {/* bg-green-600 */}
+              <p className="text-green-100 text-base">Discover Nigerian Businesses
+Find trusted local businesses near you.</p>
             </div>
           </div>
         </div>
@@ -67,10 +69,10 @@ export default function SignInPage() {
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="contact365@gmail.com"
+                    placeholder="your-email@gmail.com"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    className="w-full pl-10 pr-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                   />
                 </div>
               </div>
@@ -81,7 +83,7 @@ export default function SignInPage() {
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                     Password
                   </label>
-                  <a href="#" className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                  <a href="#" className="text-xs text-green-600 hover:text-green-700 font-medium">
                     Forgot?
                   </a>
                 </div>
@@ -109,7 +111,7 @@ export default function SignInPage() {
               {/* Sign In Button */}
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-all text-sm"
+                className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition-all text-sm"
               >
                 Sign in
               </button>
@@ -152,7 +154,7 @@ export default function SignInPage() {
             {/* Sign Up Link */}
             <p className="mt-6 text-center text-xs text-gray-600">
               Don't have an account?{" "}
-              <a href="/auth/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
+              <a href="/auth/signup" className="text-green-600 hover:text-blue-700 font-semibold">
                 Sign up
               </a>
             </p>

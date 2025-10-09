@@ -22,12 +22,12 @@ export default function SignUpPage() {
       <div className="w-full max-w-4xl bg-white rounded-2xl shadow-lg flex overflow-hidden">
         
         {/* Left Side - Image Section (hide on small) */}
-        <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-blue-900 via-slate-900 to-blue-900">
+        <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-green-900 via-slate-900 to-green-900">
           <a className="absolute top-6 left-6 z-20" href="/">
             <img
               src="/images/contact365logo-light.png"
               alt="Contact365 Logo"
-              className="h-7 w-auto"
+             className="h-7 w-auto opacity-80 hover:opacity-70 transition-opacity duration-300"
             />
           </a>
           <img
@@ -38,7 +38,8 @@ export default function SignUpPage() {
           <div className="relative z-10 flex items-end p-8">
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">Create your account</h1>
-              <p className="text-blue-100 text-base">Join Contact365 and start managing your contacts.</p>
+              <p className="text-green-100 text-base">Discover Nigerian Businesses
+Find trusted local businesses near you.</p>
             </div>
           </div>
         </div>
@@ -72,7 +73,7 @@ export default function SignUpPage() {
           value={formData.name}
           onChange={handleChange}
           className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+          focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-sm"
         />
       </div>
     </div>
@@ -88,11 +89,11 @@ export default function SignUpPage() {
           id="email"
           name="email"
           type="email"
-          placeholder="contact365@gmail.com"
+          placeholder="youremail@gmail.com"
           value={formData.email}
           onChange={handleChange}
           className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+          focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-sm"
         />
       </div>
     </div>
@@ -115,7 +116,7 @@ export default function SignUpPage() {
           value={formData.password}
           onChange={handleChange}
           className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+          focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-sm"
         />
         <button
           type="button"
@@ -142,7 +143,7 @@ export default function SignUpPage() {
           value={formData.confirmPassword}
           onChange={handleChange}
           className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+          focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-sm"
         />
         <button
           type="button"
@@ -158,8 +159,8 @@ export default function SignUpPage() {
   {/* Sign Up Button */}
   <button
     type="button"
-    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2.5 rounded-lg 
-    font-semibold hover:from-blue-700 hover:to-blue-800 transition-all shadow-md text-sm"
+    className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-2.5 rounded-lg 
+    font-semibold hover:from-green-700 hover:to-green-800 transition-all shadow-md text-sm"
   >
     Sign up
   </button>
@@ -203,7 +204,7 @@ export default function SignUpPage() {
             {/* Sign In Link */}
             <p className="mt-6 text-center text-xs text-gray-600">
               Already have an account?{" "}
-              <a href="/auth/signin" className="text-blue-600 hover:text-blue-700 font-semibold">
+              <a href="/auth/signin" className="text-green-600 hover:text-green-700 font-semibold">
                 Sign in
               </a>
             </p>
