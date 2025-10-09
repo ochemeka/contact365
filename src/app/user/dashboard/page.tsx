@@ -33,7 +33,7 @@ const UserDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const stats = [
-    { label: 'Total Listings', value: '12', change: '+2', icon: MapPin, color: 'bg-blue-500 dark:bg-blue-600' },
+    { label: 'Total Listings', value: '12', change: '+2', icon: MapPin, color: 'bg-green-500 dark:bg-green-600' },
     { label: 'Profile Views', value: '1,234', change: '+12%', icon: Eye, color: 'bg-green-500 dark:bg-green-600' },
     { label: 'Reviews Received', value: '48', change: '+5', icon: Star, color: 'bg-yellow-500 dark:bg-yellow-600' },
     { label: 'Saved by Users', value: '89', change: '+8', icon: Heart, color: 'bg-red-500 dark:bg-red-600' }
@@ -58,7 +58,7 @@ const UserDashboard = () => {
       onClick={() => onClick(id)}
       className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
         isActive 
-          ? 'bg-blue-500 dark:bg-blue-600 text-white shadow-lg shadow-blue-500/25 dark:shadow-blue-600/25' 
+          ? 'bg-green-500 dark:bg-green-600 text-white shadow-lg shadow-green-500/25 dark:shadow-green-600/25' 
           : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
       }`}
     >
@@ -114,7 +114,7 @@ const UserDashboard = () => {
       </div>
       
       <div className="flex gap-2">
-        <button className="flex-1 bg-blue-500 dark:bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors text-sm font-medium">
+        <button className="flex-1 bg-green-500 dark:bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-600 dark:hover:bg-green-700 transition-colors text-sm font-medium">
           View Details
         </button>
         <button className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
@@ -132,11 +132,11 @@ const UserDashboard = () => {
       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
         activity.type === 'review' ? 'bg-yellow-100 dark:bg-yellow-900/30' :
         activity.type === 'approval' ? 'bg-green-100 dark:bg-green-900/30' :
-        activity.type === 'view' ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-red-100 dark:bg-red-900/30'
+        activity.type === 'view' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
       }`}>
         {activity.type === 'review' && <Star className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />}
         {activity.type === 'approval' && <BarChart3 className="w-4 h-4 text-green-600 dark:text-green-400" />}
-        {activity.type === 'view' && <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+        {activity.type === 'view' && <Eye className="w-4 h-4 text-green-600 dark:text-green-400" />}
         {activity.type === 'save' && <Heart className="w-4 h-4 text-red-600 dark:text-red-400" />}
       </div>
       <div className="flex-1">
@@ -196,7 +196,7 @@ const UserDashboard = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
               <div className="flex flex-wrap gap-4">
-                <button className="bg-blue-500 dark:bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors font-medium flex items-center gap-2">
+                <button className="bg-green-500 dark:bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-600 dark:hover:bg-green-700 transition-colors font-medium flex items-center gap-2">
                   <Plus className="w-4 h-4" />
                   Add New Listing
                 </button>
@@ -251,7 +251,7 @@ const UserDashboard = () => {
                   <Filter className="w-4 h-4" />
                   Filter
                 </button>
-                <button className="bg-blue-500 dark:bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors font-medium flex items-center gap-2">
+                <button className="bg-green-500 dark:bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-600 dark:hover:bg-green-700 transition-colors font-medium flex items-center gap-2">
                   <Plus className="w-4 h-4" />
                   Add Listing
                 </button>
@@ -271,7 +271,7 @@ const UserDashboard = () => {
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Analytics & Insights</h2>
             
             <div className="flex gap-2">
-              <button className="px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded-lg text-sm font-medium">7 Days</button>
+              <button className="px-4 py-2 bg-green-500 dark:bg-green-600 text-white rounded-lg text-sm font-medium">7 Days</button>
               <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700">30 Days</button>
               <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700">90 Days</button>
             </div>
@@ -279,7 +279,7 @@ const UserDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                 <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                  <TrendingUp className="w-5 h-5 text-green-500 dark:text-green-400" />
                   <h3 className="font-semibold text-gray-900 dark:text-white">Total Views</h3>
                 </div>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mb-2">2,847</p>
@@ -348,10 +348,10 @@ const UserDashboard = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
               <div className="flex items-start gap-6 mb-8">
                 <div className="relative">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-500 to-purple-500 flex items-center justify-center">
                     <User className="w-12 h-12 text-white" />
                   </div>
-                  <button className="absolute bottom-0 right-0 w-8 h-8 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors">
+                  <button className="absolute bottom-0 right-0 w-8 h-8 bg-green-500 dark:bg-green-600 rounded-full flex items-center justify-center hover:bg-green-600 dark:hover:bg-green-700 transition-colors">
                     <Camera className="w-4 h-4 text-white" />
                   </button>
                 </div>
@@ -359,7 +359,7 @@ const UserDashboard = () => {
                   <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">John Doe</h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">Business Owner • Member since Jan 2024</p>
                   <div className="flex gap-3">
-                    <button className="bg-blue-500 dark:bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors text-sm font-medium">
+                    <button className="bg-green-500 dark:bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-600 dark:hover:bg-green-700 transition-colors text-sm font-medium">
                       Edit Profile
                     </button>
                     <button className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium">
@@ -415,8 +415,8 @@ const UserDashboard = () => {
                 <div>
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Account Statistics</h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">12</p>
+                    <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">12</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">Total Listings</p>
                     </div>
                     <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
@@ -450,7 +450,7 @@ const UserDashboard = () => {
                     <h4 className="font-medium text-gray-900 dark:text-white">Email Notifications</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Receive email updates about your listings</p>
                   </div>
-                  <button className="w-12 h-6 bg-blue-500 dark:bg-blue-600 rounded-full relative transition-colors">
+                  <button className="w-12 h-6 bg-green-500 dark:bg-green-600 rounded-full relative transition-colors">
                     <span className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></span>
                   </button>
                 </div>
@@ -470,7 +470,7 @@ const UserDashboard = () => {
                     <h4 className="font-medium text-gray-900 dark:text-white">Marketing Emails</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Receive tips and promotional content</p>
                   </div>
-                  <button className="w-12 h-6 bg-blue-500 dark:bg-blue-600 rounded-full relative transition-colors">
+                  <button className="w-12 h-6 bg-green-500 dark:bg-green-600 rounded-full relative transition-colors">
                     <span className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></span>
                   </button>
                 </div>
@@ -485,7 +485,7 @@ const UserDashboard = () => {
                     <h4 className="font-medium text-gray-900 dark:text-white">Profile Visibility</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Make your profile visible to everyone</p>
                   </div>
-                  <button className="w-12 h-6 bg-blue-500 dark:bg-blue-600 rounded-full relative transition-colors">
+                  <button className="w-12 h-6 bg-green-500 dark:bg-green-600 rounded-full relative transition-colors">
                     <span className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></span>
                   </button>
                 </div>
@@ -495,7 +495,7 @@ const UserDashboard = () => {
                     <h4 className="font-medium text-gray-900 dark:text-white">Show Contact Info</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Display email and phone on public profile</p>
                   </div>
-                  <button className="w-12 h-6 bg-blue-500 dark:bg-blue-600 rounded-full relative transition-colors">
+                  <button className="w-12 h-6 bg-green-500 dark:bg-green-600 rounded-full relative transition-colors">
                     <span className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></span>
                   </button>
                 </div>
