@@ -24,9 +24,9 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="w-full bg-gray-900 dark:bg-gray-950 text-gray-300 py-8 sm:py-12 border-t border-gray-800">
-      <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+    <footer className="w-full bg-gray-900 dark:bg-gray-950 text-gray-300 py-8 sm:py-12 border-t border-gray-800 overflow-hidden">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Logo + About */}
           <div className="space-y-3">
             <Link href="/" className="inline-block">
@@ -37,11 +37,11 @@ export default function Footer() {
                     : "/images/contact365logo-dark.png"
                 }
                 alt="Contact365 Logo"
-                className="h-8 w-auto"
+                className="h-8 w-auto max-w-full"
               />
             </Link>
-            <p className="text-sm text-gray-400 leading-relaxed pr-4">
-              Contact365 — Your trusted local business directory.  
+            <p className="text-sm text-gray-400 leading-relaxed">
+              Contact365 — Your trusted local business directory.
               Discover businesses, connect with services, and grow your network.
             </p>
           </div>
@@ -51,27 +51,27 @@ export default function Footer() {
             <h4 className="text-white font-semibold text-base">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/" className="hover:text-white transition">
+                <Link href="/" className="hover:text-white transition block">
                   Home
                 </Link>
               </li>
               <li>
-                <Link href="/explore" className="hover:text-white transition">
+                <Link href="/explore" className="hover:text-white transition block">
                   Explore
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="hover:text-white transition">
+                <Link href="/blog" className="hover:text-white transition block">
                   Blog
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-white transition">
+                <Link href="/contact" className="hover:text-white transition block">
                   Contact
                 </Link>
               </li>
               <li>
-                <Link href="/add-listing" className="hover:text-white transition">
+                <Link href="/add-listing" className="hover:text-white transition block">
                   Add Listing
                 </Link>
               </li>
@@ -81,7 +81,7 @@ export default function Footer() {
           {/* Social Media */}
           <div className="space-y-3">
             <h4 className="text-white font-semibold text-base">Follow Us</h4>
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               <Link
                 href="https://facebook.com"
                 target="_blank"
@@ -89,7 +89,7 @@ export default function Footer() {
                 className="hover:text-blue-500 transition"
                 aria-label="Facebook"
               >
-                <Facebook className="w-5 h-5" />
+                <Facebook className="w-6 h-6" />
               </Link>
               <Link
                 href="https://twitter.com"
@@ -98,7 +98,7 @@ export default function Footer() {
                 className="hover:text-sky-400 transition"
                 aria-label="Twitter"
               >
-                <Twitter className="w-5 h-5" />
+                <Twitter className="w-6 h-6" />
               </Link>
               <Link
                 href="https://instagram.com"
@@ -107,7 +107,7 @@ export default function Footer() {
                 className="hover:text-pink-500 transition"
                 aria-label="Instagram"
               >
-                <Instagram className="w-5 h-5" />
+                <Instagram className="w-6 h-6" />
               </Link>
               <Link
                 href="https://linkedin.com"
@@ -116,24 +116,24 @@ export default function Footer() {
                 className="hover:text-blue-400 transition"
                 aria-label="LinkedIn"
               >
-                <Linkedin className="w-5 h-5" />
+                <Linkedin className="w-6 h-6" />
               </Link>
             </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-8 pt-6 border-t border-gray-800">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-xs sm:text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} Contact365. All rights reserved.</p>
-            <div className="flex gap-4">
-              <Link href="/privacy" className="hover:text-white transition">
-                Privacy
-              </Link>
-              <Link href="/terms" className="hover:text-white transition">
-                Terms
-              </Link>
-            </div>
+        <div className="mt-8 pt-6 border-t border-gray-800 text-center">
+          <p className="text-xs sm:text-sm text-gray-500 mb-3">
+            © {new Date().getFullYear()} Contact365. All rights reserved.
+          </p>
+          <div className="flex justify-center gap-6 text-xs text-gray-500">
+            <Link href="/privacy" className="hover:text-white transition">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-white transition">
+              Terms
+            </Link>
           </div>
         </div>
       </div>
