@@ -24,7 +24,7 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="w-full bg-gray-900 dark:bg-gray-950 text-gray-300 py-8 sm:py-12 border-t border-gray-800 overflow-hidden">
+    <footer className="w-full bg-gray-900 dark:bg-gray-950 text-gray-300 py-8 sm:py-12 pb-20 sm:pb-12 border-t border-gray-800">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Logo + About */}
